@@ -19,13 +19,12 @@ return new class extends Migration
             $table->string('nomor_whatapp')->length(14);
             $table->string('angkatan')->length(4);
             $table->string('kelas');
-            $table->string('tanggal_lahir');
+            $table->string('tangga;l_lahir');
             $table->string('ukuran_kaos');
             $table->string('nomor_darurat')->length(14);
             $table->string('tipe_nomor_darurat');
             $table->string('riwayat_penyakit');
             $table->string('divisi');
-            $table->string('bukti_pembayaran')->nullable();
             $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
             $table->timestamps();
         });

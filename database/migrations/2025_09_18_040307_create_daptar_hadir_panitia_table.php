@@ -17,7 +17,6 @@ return new class extends Migration
             $table->datetime('waktu_presensi_datang')->nullable();
             $table->enum('presensi_pulang', ['pulang', 'belum pulang']);
             $table->datetime('waktu_presensi_pulang')->nullable();
-            $table->string('qr_code')->nullable();
             $table->foreignId('penerimaan_panitia_id')->constrained('penerimaan_panitia')->onDelete('cascade');
             $table->timestamps();
         });

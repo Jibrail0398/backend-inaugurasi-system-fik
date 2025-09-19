@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nomor_whatapp')->length(14);
             $table->string('angkatan')->length(4);
             $table->string('kelas');
-            $table->date('tanggal_lahir');
+            $table->string('tangga;l_lahir');
             $table->string('ukuran_kaos');
             $table->string('nomor_darurat')->length(14);
             $table->string('tipe_nomor_darurat');
