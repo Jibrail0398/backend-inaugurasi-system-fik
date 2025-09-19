@@ -11,12 +11,17 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "laravel/tinker": "^2.10.1"
 =======
         "laravel/tinker": "^2.10.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "tymon/jwt-auth": "^2.2"
 >>>>>>> d7085f7 (Database  dan Login dasar dengan firebase/php-jwt)
+=======
+        "laravel/tinker": "^2.10.1",
+        "tymon/jwt-auth": "^2.2"
+>>>>>>> 917cdb1 (Database  dan Login dasar dengan firebase/php-jwt)
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

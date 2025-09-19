@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
-            'nim' => '1234567890',
+            'NIM' => '1234567890',
             'password' => Hash::make('password123'),
             'role' => 'admin',
         ]);
@@ -31,23 +31,10 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Mentor User',
             'email' => 'mentor@example.com',
-            'nim' => '1234567891',
+            'NIM' => '1234567891',
             'password' => Hash::make('password123'),
             'role' => 'mentor',
         ]);
 
-        // Panitia
-        User::create([
-            'name' => 'Panitia User',
-            'email' => 'panitia@example.com',
-            'nim' => '1234567892',
-            'password' => Hash::make('password123'),
-            'role' => 'panitia',
-        ]);
-
-
-
     }
-
-    
 }

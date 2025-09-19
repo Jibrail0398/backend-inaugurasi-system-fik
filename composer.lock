@@ -6,7 +6,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "d1bcab543bd8e5b666f4066c0887fe34",
+=======
+    "content-hash": "73c3c438f696c68ac11515c1b8eea19c",
+>>>>>>> 917cdb1 (Database  dan Login dasar dengan firebase/php-jwt)
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3719,6 +3723,7 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "simplesoftwareio/simple-qrcode",
             "version": "4.2.0",
             "source": {
@@ -3787,6 +3792,8 @@
             "time": "2021-02-08T20:43:55+00:00"
         },
         {
+=======
+>>>>>>> 917cdb1 (Database  dan Login dasar dengan firebase/php-jwt)
             "name": "stella-maris/clock",
             "version": "0.1.7",
             "source": {

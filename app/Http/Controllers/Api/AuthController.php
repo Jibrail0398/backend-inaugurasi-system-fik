@@ -9,7 +9,6 @@ use App\Models\PersonalAccessToken;
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -21,59 +20,46 @@ class AuthController extends Controller
     }
 
     // API untuk login (Login dengan NIM dan password)
-
-
     public function login(Request $request)
     {
-        // 1. Validasi input
-        $validator = Validator::make($request->all(), [
-            'nim' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        try {
+            $credentials = $request->only('nim', 'password');
 
-        if ($validator->fails()) {
+            $user = User::where('nim', $credentials['nim'])->first();
+
+            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Login gagal. Email atau password salah.'
+                ], 401);
+            }
+
+            $payload = [
+                'sub' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'iat' => time(),
+                'exp' => time() + 60*60*24
+            ];
+
+            $token = JWT::encode($payload, $this->secret, 'HS256');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil! Selamat datang kembali.',
+                'user' => $user,
+                'token' => "Bearer $token"
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal',
-                'errors'  => $validator->errors()
-            ], 422);
+                'message' => 'Terjadi kesalahan saat login. Silakan coba lagi.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // 2. Ambil data yang sudah tervalidasi
-        $credentials = $validator->validated(); // pasti ada 'nim' dan 'password'
-
-        // 3. Cari user berdasarkan NIM
-        $user = User::where('nim', $credentials['nim'])->first();
-
-        // 4. Cek password
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Login gagal. NIM atau password salah.'
-            ], 401);
-        }
-
-        // 5. Buat token JWT
-        $payload = [
-            'sub'   => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email,
-            'role'  => $user->role,
-            'iat'   => time(),
-            'exp'   => time() + 60*60*24
-        ];
-
-        $token = JWT::encode($payload, $this->secret, 'HS256');
-
-        // 6. Response sukses
-        return response()->json([
-            'success' => true,
-            'message' => 'Login berhasil! Selamat datang kembali.',
-            'user'    => $user,
-            'token'   => "Bearer $token"
-        ], 200);
     }
-
 
     // API untuk get data user dari token
     public function me(Request $request)
