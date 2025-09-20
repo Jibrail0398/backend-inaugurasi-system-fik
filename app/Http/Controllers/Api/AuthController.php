@@ -56,7 +56,6 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat login. Silakan coba lagi.',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
