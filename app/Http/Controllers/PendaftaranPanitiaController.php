@@ -1,27 +1,27 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\panitia;
 use Illuminate\Http\Request;
-use App\Models\peserta;
-class PendaftaranPesertaController extends Controller
+
+class PendaftaranPanitiaController extends Controller
 {
     public function daftar(Request $request)
     {
+        // --- IGNORE ---
         try {
             $validatedData = $request->validate([
                 'nama' => 'required|string|max:255',
-                'NIM' => 'required|string|max:16|unique:peserta,NIM',
-                'email' => 'required|email|unique:peserta,email',
-                'nomor_whatsapp' => 'required|string|max:14',
+                'NIM' => 'required|string|max:16|unique:panitia,NIM',
                 'angkatan' => 'required|string|max:4',
                 'kelas' => 'required|string|max:255',
                 'tanggal_lahir' => 'required|date',
+                'nomor_whatsapp' => 'required|string|max:14',
+                'email' => 'required|email|unique:panitia,email',
                 'ukuran_kaos' => 'required|string|max:10',
                 'nomor_darurat' => 'required|string|max:14',
                 'tipe_nomor_darurat' => 'required|string|max:50',
                 'riwayat_penyakit' => 'nullable|string|max:500',
-                'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048',
                 'divisi' => 'required|string|max:100',
                 'komitmen1' => 'required|in:ya,tidak',
                 'komitmen2' => 'required|in:ya,tidak',
@@ -33,11 +33,11 @@ class PendaftaranPesertaController extends Controller
                 'email.email' => 'Format email tidak valid.'
             ]);
 
-            $peserta = peserta::create($validatedData);
+            $panitia = panitia::create($validatedData);
 
             return response()->json([
                 'message' => 'Pendaftaran berhasil!',
-                'data' => $peserta
+                'data' => $panitia
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -55,15 +55,15 @@ class PendaftaranPesertaController extends Controller
     public function get()
     {
         try {
-            $peserta = peserta::all();
-            if ($peserta->count() > 0) {
+            $panitia = panitia::all();
+            if ($panitia->count() > 0) {
                 return response()->json([
-                    'message' => 'Daftar peserta berhasil diambil',
-                    'data' => $peserta
+                    'message' => 'Daftar panitia berhasil diambil',
+                    'data' => $panitia
                 ], 200);
             } else {
                 return response()->json([
-                    'message' => 'Belum ada peserta yang terdaftar',
+                    'message' => 'Tidak ada data panitia',
                     'data' => []
                 ], 200);
             }
