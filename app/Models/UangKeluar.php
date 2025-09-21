@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UangKeluar extends Model
 {
+    use HasFactory;
+
     protected $table = 'uang_keluar';
 
     protected $fillable = [
@@ -16,8 +19,11 @@ class UangKeluar extends Model
         'keuangan_id',
     ];
 
+    /**
+     * Relasi ke Keuangan
+     */
     public function keuangan()
     {
-        return $this->belongsTo(Keuangan::class, 'keuangan_id');
+        return $this->belongsTo(Keuangan::class);
     }
 }

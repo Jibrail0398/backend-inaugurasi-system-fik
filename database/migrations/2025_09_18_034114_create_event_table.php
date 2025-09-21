@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('event', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_event')->unique();
             $table->string('nama_event');
             $table->string('jenis');
             $table->string('tema');
             $table->string('tempat');
+            $table->integer('harga_pendaftaran_peserta')->default(0);
             $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
             $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
             $table->timestamps();

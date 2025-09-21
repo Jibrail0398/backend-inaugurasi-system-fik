@@ -14,10 +14,6 @@ use App\Http\Controllers\PendaftaranPesertaController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/phpinfo', function () {
+    phpinfo();
 });
-
-// Route untuk pendaftaran peserta
-Route::post('/pendaftaran-peserta', [PendaftaranPesertaController::class, 'daftar']);
-Route::get('/pendaftaran-peserta', [PendaftaranPesertaController::class, 'get']);

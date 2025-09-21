@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.10.1"
 =======
         "laravel/tinker": "^2.10.1",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "tymon/jwt-auth": "^2.2"
 >>>>>>> d7085f7 (Database  dan Login dasar dengan firebase/php-jwt)
     },
