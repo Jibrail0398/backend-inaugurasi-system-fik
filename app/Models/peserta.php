@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class peserta extends Model
+{
+    use HasFactory;
+
+    protected $table = 'peserta';
+
+    protected $fillable = [
+        'nama',
+        'NIM',
+        'email',
+        'nomor_whatsapp',
+        'angkatan',
+        'kelas',
+        'tanggal_lahir',
+        'ukuran_kaos',
+        'nomor_darurat',
+        'tipe_nomor_darurat',
+        'riwayat_penyakit',
+        'divisi',
+        'bukti_pembayaran',
+        'komitmen1',
+        'komitmen2',
+    ];
+        // Relasi ke penerimaan_peserta
+        public function penerimaan()
+        {
+            return $this->hasOne(penerimaan_peserta::class, 'id_peserta');
+        }
+}
