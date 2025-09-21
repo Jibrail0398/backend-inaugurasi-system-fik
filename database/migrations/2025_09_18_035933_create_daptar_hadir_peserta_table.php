@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daptar_hadir_peserta', function (Blueprint $table) {
+        Schema::create('daftar_hadir_peserta', function (Blueprint $table) {
             $table->id();
             $table->enum('presensi_datang', ['hadir', 'tidak hadir']);
             $table->datetime('waktu_presensi_datang')->nullable();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daptar_hadir_peserta');
+        Schema::dropIfExists('daftar_hadir_peserta');
     }
 };

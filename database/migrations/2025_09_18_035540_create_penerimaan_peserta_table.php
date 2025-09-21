@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('penerimaan_peserta', function (Blueprint $table) {
             $table->id();
             $table->enum('status_pembayaran', ['lunas', 'belum lunas'])->default('belum lunas');
-            $table->date('tanggal_penerimaan');
+            $table->date('tanggal_penerimaan')->nullable();
             $table->foreignId('pendaptar_peserta_id')->constrained('pendaptar_peserta')->onDelete('cascade');
             $table->timestamps();
         });
