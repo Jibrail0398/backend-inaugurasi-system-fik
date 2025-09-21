@@ -113,7 +113,7 @@ Route::delete('/uang-keluar/{id}', [UangKeluarController::class, 'Destroy']);
 
 
         // Daftar Hadir Peserta dan Panitia Routes
-        Route::get('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
+        Route::post('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
         
 
 

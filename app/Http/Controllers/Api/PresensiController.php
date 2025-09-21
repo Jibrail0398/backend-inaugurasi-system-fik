@@ -9,18 +9,37 @@ use App\Models\PenerimaanPanitia;
 
 class PresensiController extends Controller
 {
-    public function scan(Request $request)
+public function scan(Request $request)
     {
         $request->validate([
             'role' => 'required|in:peserta,panitia',
-            'id'   => 'required|integer',
             'type' => 'required|in:datang,pulang',
+            'id'   => 'nullable|integer',
+            'kode' => 'nullable|string',
         ]);
 
         // Tentukan model sesuai role
-        $penerimaan = $request->role === 'peserta'
-            ? PenerimaanPeserta::with('daftarHadir')->find($request->id)
-            : PenerimaanPanitia::with('daftarHadir')->find($request->id);
+        if ($request->role === 'peserta') {
+            $query = PenerimaanPeserta::with(['daftarHadir', 'pendaftarPeserta']);
+            
+            if ($request->filled('id')) {
+                $penerimaan = $query->find($request->id);
+            } elseif ($request->filled('kode')) {
+                $penerimaan = $query->whereHas('pendaftarPeserta', function($q) use ($request) {
+                    $q->where('kode_peserta', $request->kode);
+                })->first();
+            }
+        } else { // panitia
+            $query = PenerimaanPanitia::with(['daftarHadir', 'pendaftaranPanitia']);
+            
+            if ($request->filled('id')) {
+                $penerimaan = $query->find($request->id);
+            } elseif ($request->filled('kode')) {
+                $penerimaan = $query->whereHas('pendaftaranPanitia', function($q) use ($request) {
+                    $q->where('kode_panitia', $request->kode);
+                })->first();
+            }
+        }
 
         if (!$penerimaan) {
             return response()->json([
