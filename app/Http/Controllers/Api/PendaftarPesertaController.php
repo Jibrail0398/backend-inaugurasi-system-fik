@@ -29,10 +29,18 @@ class PendaftarPesertaController extends Controller
         ], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $kode_event)
     {
+        // Cari event berdasarkan kode_event di URL
+        $event = Event::where('kode_event', $kode_event)->first();
+        if (!$event) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Event dengan kode ' . $kode_event . ' tidak ditemukan'
+            ], 404);
+        }
+
         $validator = Validator::make($request->all(), [
-            'event_id'           => 'required|exists:event,id',
             'nama'               => 'required|string|max:255',
             'NIM'                => 'required|string|max:16',
             'email'              => 'required|email',
@@ -45,7 +53,7 @@ class PendaftarPesertaController extends Controller
             'tipe_nomor_darurat' => 'required|string|max:50',
             'riwayat_penyakit'   => 'nullable|string|max:255',
             'divisi'             => 'required|string|max:100',
-            'bukti_pembayaran'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // wajib foto
+            'bukti_pembayaran'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -57,37 +65,34 @@ class PendaftarPesertaController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($validator, &$peserta, $request) {
+            DB::transaction(function () use ($validator, &$peserta, $request, $event) {
                 $data = $validator->validated();
-                $event = Event::findOrFail($data['event_id']);
 
                 // Hitung kode peserta per event
-                $lastPeserta = PendaftarPeserta::where('event_id', $data['event_id'])
+                $lastPeserta = PendaftarPeserta::where('event_id', $event->id)
                                 ->orderBy('id', 'desc')->first();
                 $noUrut = $lastPeserta ? ((int) substr($lastPeserta->kode_peserta, strlen($event->kode_event)+1)) + 1 : 1;
                 $kodePeserta = $event->kode_event . '-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
 
-                // Cek NIM & email unik per event
-                if (PendaftarPeserta::where('event_id', $data['event_id'])->where('NIM', $data['NIM'])->exists()) {
+                // Cek unik NIM & email di event ini
+                if (PendaftarPeserta::where('event_id', $event->id)->where('NIM', $data['NIM'])->exists()) {
                     throw new \Exception('NIM sudah terdaftar di event ini');
                 }
-                if (PendaftarPeserta::where('event_id', $data['event_id'])->where('email', $data['email'])->exists()) {
+                if (PendaftarPeserta::where('event_id', $event->id)->where('email', $data['email'])->exists()) {
                     throw new \Exception('Email sudah terdaftar di event ini');
                 }
 
-                // Upload bukti pembayaran jika ada
+                // Upload bukti pembayaran
                 if ($request->hasFile('bukti_pembayaran')) {
                     $file = $request->file('bukti_pembayaran');
-
-                    // Folder berdasarkan kode event
                     $dir = 'bukti_pembayaran/' . $event->kode_event;
-
                     $path = $file->store($dir, 'public');
                     $data['bukti_pembayaran'] = $path;
                 }
 
                 // Buat peserta
                 $peserta = PendaftarPeserta::create(array_merge($data, [
+                    'event_id'     => $event->id,
                     'kode_peserta' => $kodePeserta
                 ]));
 
@@ -112,6 +117,7 @@ class PendaftarPesertaController extends Controller
             ], 500);
         }
     }
+
 
     public function update(Request $request, $id)
     {

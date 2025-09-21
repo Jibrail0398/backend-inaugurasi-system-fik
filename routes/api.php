@@ -82,7 +82,7 @@ Route::prefix('v1')->group(function () {
 
 
         // Daftar Hadir Peserta dan Panitia Routes
-        Route::get('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
+        Route::post('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
         
 
 
