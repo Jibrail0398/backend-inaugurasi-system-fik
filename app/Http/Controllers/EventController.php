@@ -6,6 +6,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -33,12 +34,21 @@ class EventController extends Controller
 
         try {
 
-            $event = Event::create($payload);
+            $result = DB::transaction(function() use ($payload) {
+
+                $event = Event::create($payload);
+
+                // buat data keuangan baru secara otomatis dari event yang sudah dibuat
+                $event->keuangan()->create([
+                    'saldo' => 0,
+                ]);
+                return $event;
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Event berhasil disimpan',
-                'data' => $event
+                'data' => $result
             ], 201);
 
         } catch (\Throwable $e) {

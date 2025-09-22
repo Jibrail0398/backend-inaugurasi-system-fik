@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('keuangan', function (Blueprint $table) {
             $table->id();
-            $table->integer('saldo')->nullable();
+            $table->integer('saldo')->default(0);;
             $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
             $table->timestamps();
         });
