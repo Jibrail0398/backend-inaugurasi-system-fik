@@ -36,6 +36,17 @@ class UserSeeder extends Seeder
             'role' => 'mentor',
         ]);
 
+        // Panitia
+        User::create([
+            'name' => 'Panitia User',
+            'email' => 'panitia@example.com',
+            'nim' => '1234567892',
+            'password' => Hash::make('password123'),
+            'role' => 'panitia',
+        ]);
+
+
+
     }
 
     

@@ -71,26 +71,31 @@ class PenerimaanPesertaController extends Controller
                 return response()->json(['success' => false, 'message' => 'Event peserta tidak ditemukan'], 404);
             }
 
-            // Pastikan ada keuangan untuk event
+            // ✅ Generate kode peserta
+            if (!$pendaftar->kode_peserta) {
+                $lastPeserta = $event->pendaftarPeserta()
+                    ->whereNotNull('kode_peserta')
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                $noUrut = $lastPeserta
+                    ? ((int) substr($lastPeserta->kode_peserta, strlen($event->kode_event) + 1)) + 1
+                    : 1;
+
+                $kodePeserta = $event->kode_event . '-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
+
+                $pendaftar->update(['kode_peserta' => $kodePeserta]);
+            }
+
+            // ✅ Buat/cek keuangan
             $keuangan = $event->keuangan;
             if (!$keuangan) {
-                // buat keuangan baru untuk event jika belum ada
                 $keuangan = Keuangan::create([
                     'event_id' => $event->id,
-                    // tambahkan field lain yang wajib sesuai tabel keuangan
                 ]);
             }
 
-            // Debug untuk pastikan semua variabel ada
-            // dd([
-            //     'peserta_id' => $pendaftar->id,
-            //     'keuangan_id' => $keuangan->id,
-            //     'harga_pendaftaran' => $event->harga_pendaftaran_peserta,
-            //     'asal_pemasukan' => $pendaftar->nama,
-            //     'bukti_pembayaran' => $pendaftar->bukti_pembayaran
-            // ]);
-
-            // Simpan/Update UangMasuk
+            // ✅ Simpan uang masuk
             if ($event->harga_pendaftaran_peserta > 0) {
                 UangMasuk::updateOrCreate(
                     [
@@ -106,7 +111,7 @@ class PenerimaanPesertaController extends Controller
                 );
             }
 
-            // Buat folder QR
+            // ✅ Generate QR datang & pulang
             $kodeEvent = $event->kode_event ?? 'umum';
             $dir = "qrcodes/{$kodeEvent}";
             if (!Storage::disk('public')->exists($dir)) {
@@ -116,7 +121,6 @@ class PenerimaanPesertaController extends Controller
             $fileDatang = "{$dir}/{$pendaftar->kode_peserta}_datang.png";
             $filePulang = "{$dir}/{$pendaftar->kode_peserta}_pulang.png";
 
-            // Generate QR
             QrCode::format('png')->size(250)
                 ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'datang']),
                     Storage::disk('public')->path($fileDatang));
@@ -124,7 +128,6 @@ class PenerimaanPesertaController extends Controller
                 ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'pulang']),
                     Storage::disk('public')->path($filePulang));
 
-            // Update/Create daftar hadir
             DaftarHadirPeserta::updateOrCreate(
                 ['penerimaan_peserta_id' => $penerimaan->id],
                 [
@@ -135,7 +138,6 @@ class PenerimaanPesertaController extends Controller
                 ]
             );
 
-            // Kirim email QR
             try {
                 Mail::to($pendaftar->email)->send(new QrCodeMail(
                     $pendaftar,
@@ -148,6 +150,7 @@ class PenerimaanPesertaController extends Controller
         } else {
             $penerimaan->save();
         }
+
 
         return response()->json([
             'success' => true,

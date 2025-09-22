@@ -19,16 +19,10 @@ use App\Http\Controllers\Api\UangKeluarController;
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
+    Route::post('/pendaftaran-panitia/{kode_event}', [PendaftarPanitiaController::class,'store']);
 
-    Route::prefix('peserta')->group(function () {
-        Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
-    });
-
-    Route::prefix('panitia')->group(function () {
-       Route::post('/', [PendaftarPanitiaController::class,'store']);
-    });
-
-    Route::middleware('auth.jwt')->group(function () {
+    Route::middleware('auth.jwt:admin,mentor')->group(function () {
 
         // User Profile and Logout
         Route::get('/me', [AuthController::class, 'me']);
@@ -60,16 +54,17 @@ Route::prefix('v1')->group(function () {
         });
 
         // Penerimaan Peserta Routes
-        Route::prefix('penerimaan')->group(function () {
+        Route::prefix('penerimaan-peserta')->group(function () {
             Route::get('/', [PenerimaanPesertaController::class,'index']);
             Route::get('{id}', [PenerimaanPesertaController::class,'show']);
             Route::put('{id}', [PenerimaanPesertaController::class,'update']);
         });
 
-       // Penerimaan Panitia
-        Route::put('/penerimaan-panitia/{id}', [PenerimaanPanitiaController::class, 'update']);
-        Route::get('/penerimaan-panitia', [PenerimaanPanitiaController::class, 'index']);
-        Route::get('/penerimaan-panitia/{id}', [PenerimaanPanitiaController::class, 'show']);
+        Route::prefix('penerimaan-panitia')->group(function () {
+            Route::get('/', [PenerimaanPanitiaController::class,'index']);
+            Route::get('{id}', [PenerimaanPanitiaController::class,'show']);
+            Route::put('{id}', [PenerimaanPanitiaController::class,'update']);
+        });
 
 
         Route::prefix('uang-masuk')->group(function () {
@@ -79,12 +74,21 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}', [UangMasukController::class, 'update']);  // PUT update pemasukan
             Route::delete('/{id}', [UangMasukController::class, 'destroy']); // DELETE hapus pemasukan
         });
+        
+        Route::prefix('uang-keluar')->group(function () {
+            Route::get('/', [UangKeluarController::class, 'index']);       // GET semua pengeluaran
+            Route::get('/{id}', [UangKeluarController::class, 'show']);    // GET detail pengeluaran
+            Route::post('/', [UangKeluarController::class, 'store']);      // POST tambah pengeluaran
+            Route::put('/{id}', [UangKeluarController::class, 'update']);  // PUT update pengeluaran
+            Route::delete('/{id}', [UangKeluarController::class, 'destroy']); // DELETE hapus pengeluaran
+        });
 
+    });
+
+    Route::middleware('auth.jwt:admin,mentor,peserta,panitia')->group(function () {
 
         // Daftar Hadir Peserta dan Panitia Routes
         Route::post('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
-        
-
 
     });
 });
