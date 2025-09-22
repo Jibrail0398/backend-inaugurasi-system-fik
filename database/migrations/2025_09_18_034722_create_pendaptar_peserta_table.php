@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pendaptar_peserta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
-            $table->string('kode_peserta')->unique();
+            $table->string('kode_peserta')->unique()->nullable();
             $table->string('nama');
             $table->string('NIM')->length(16);
             $table->string('email')->nullable();
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('divisi');
             $table->string('bukti_pembayaran')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

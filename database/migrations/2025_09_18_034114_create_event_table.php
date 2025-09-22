@@ -21,7 +21,11 @@ return new class extends Migration
             $table->integer('harga_pendaftaran_peserta')->default(0);
             $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
             $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('update_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('delete_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

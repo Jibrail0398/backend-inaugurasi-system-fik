@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('uang_masuk', function (Blueprint $table) {
             $table->id();
+            $table->string('event_name')->nullable();
             $table->integer('jumlah_uang_masuk')->nullable();
             $table->string('asal_pemasukan')->nullable();
             $table->date('tanggal_pemasukan')->nullable();
             $table->string('bukti_pemasukan')->nullable();
             $table->foreignId('keuangan_id')->constrained('keuangan')->onDelete('cascade');
-            $table->foreignId('peserta_id')->constrained('pendaptar_peserta')->onDelete('cascade');
+            $table->foreignId('peserta_id')->constrained('pendaptar_peserta')->onDelete('cascade')->nullable();
             $table->timestamps();
         });
     }
