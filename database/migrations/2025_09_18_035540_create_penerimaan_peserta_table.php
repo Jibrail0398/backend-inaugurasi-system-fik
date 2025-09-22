@@ -16,6 +16,8 @@ return new class extends Migration
             $table->enum('status_pembayaran', ['lunas', 'belum lunas'])->default('belum lunas');
             $table->date('tanggal_penerimaan')->nullable();
             $table->foreignId('pendaptar_peserta_id')->constrained('pendaptar_peserta')->onDelete('cascade');
+            $table->foreignId('konfimasi_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('update_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

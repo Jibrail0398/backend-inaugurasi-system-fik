@@ -16,6 +16,8 @@ return new class extends Migration
             $table->enum('status_penerimaan', ['diterima', 'tidak diterima'])->nullable();
             $table->date('tanggal_penerimaan')->nullable();
             $table->foreignId('pendaftaran_panitia_id')->constrained('pendaptar_panitia')->onDelete('cascade');
+            $table->foreignId('konfimasi_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('update_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

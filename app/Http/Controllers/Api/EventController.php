@@ -16,7 +16,7 @@ class EventController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Daftar semua event',
-            'data' => $events
+            'data'    => $events
         ], 200);
     }
 
@@ -42,7 +42,14 @@ class EventController extends Controller
             ], 422);
         }
 
-        $event = Event::create($validator->validated());
+        $data = $validator->validated();
+
+        // Tambahkan created_by & updated_by otomatis
+        $userId = auth()->id() ?? null;
+        $data['created_by'] = $userId;
+        $data['updated_by'] = $userId;
+
+        $event = Event::create($data);
 
         return response()->json([
             'success' => true,
@@ -99,7 +106,10 @@ class EventController extends Controller
             ], 422);
         }
 
-        $event->update($validator->validated());
+        $data = $validator->validated();
+        $data['updated_by'] = auth()->id() ?? null;
+
+        $event->update($data);
 
         return response()->json([
             'success' => true,
