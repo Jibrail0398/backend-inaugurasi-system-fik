@@ -20,46 +20,13 @@ use App\Http\Controllers\Api\UangMasukController;
 use App\Http\Controllers\Api\UangKeluarController;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::prefix('v1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
+    Route::post('/pendaftaran-panitia/{kode_event}', [PendaftarPanitiaController::class,'store']);
 
-Route::get('/event', [EventController::class, 'Index']);
-Route::get('/event/{id}', [EventController::class, 'Show']);
-Route::post('/event', [EventController::class, 'Store']);
-Route::put('/event/{id}', [EventController::class, 'Update']);
-Route::delete('/event/{id}', [EventController::class, 'Destroy']);
-
-Route::get('/keuangan', [KeuanganController::class, 'Index']);
-Route::get('/keuangan/report', [KeuanganController::class, 'Report']);
-Route::get('/keuangan/{id}', [KeuanganController::class, 'Show']);
-Route::post('/keuangan', [KeuanganController::class, 'Store']);
-Route::put('/keuangan/{id}', [KeuanganController::class, 'Update']);
-Route::delete('/keuangan/{id}', [KeuanganController::class, 'Destroy']);
-
-Route::get('/uang-masuk', [UangMasukController::class, 'Index']);
-Route::get('/uang-masuk/{id}', [UangMasukController::class, 'Show']);
-Route::post('/uang-masuk', [UangMasukController::class, 'Store']);
-Route::put('/uang-masuk/{id}', [UangMasukController::class, 'Update']);
-Route::delete('/uang-masuk/{id}', [UangMasukController::class, 'Destroy']);
-
-Route::get('/uang-keluar', [UangKeluarController::class, 'Index']);
-Route::get('/uang-keluar/{id}', [UangKeluarController::class, 'Show']);
-Route::post('/uang-keluar', [UangKeluarController::class, 'Store']);
-Route::put('/uang-keluar/{id}', [UangKeluarController::class, 'Update']);
-Route::delete('/uang-keluar/{id}', [UangKeluarController::class, 'Destroy']);
-
-
-
-    Route::prefix('peserta')->group(function () {
-        Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
-    });
-
-    Route::prefix('panitia')->group(function () {
-       Route::post('/', [PendaftarPanitiaController::class,'store']);
-    });
-
-    Route::middleware('auth.jwt')->group(function () {
+    Route::middleware('auth.jwt:admin,mentor')->group(function () {
 
         // User Profile and Logout
         Route::get('/me', [AuthController::class, 'me']);
@@ -91,16 +58,17 @@ Route::delete('/uang-keluar/{id}', [UangKeluarController::class, 'Destroy']);
         });
 
         // Penerimaan Peserta Routes
-        Route::prefix('penerimaan')->group(function () {
+        Route::prefix('penerimaan-peserta')->group(function () {
             Route::get('/', [PenerimaanPesertaController::class,'index']);
             Route::get('{id}', [PenerimaanPesertaController::class,'show']);
             Route::put('{id}', [PenerimaanPesertaController::class,'update']);
         });
 
-       // Penerimaan Panitia
-        Route::put('/penerimaan-panitia/{id}', [PenerimaanPanitiaController::class, 'update']);
-        Route::get('/penerimaan-panitia', [PenerimaanPanitiaController::class, 'index']);
-        Route::get('/penerimaan-panitia/{id}', [PenerimaanPanitiaController::class, 'show']);
+        Route::prefix('penerimaan-panitia')->group(function () {
+            Route::get('/', [PenerimaanPanitiaController::class,'index']);
+            Route::get('{id}', [PenerimaanPanitiaController::class,'show']);
+            Route::put('{id}', [PenerimaanPanitiaController::class,'update']);
+        });
 
 
         Route::prefix('uang-masuk')->group(function () {
@@ -110,12 +78,21 @@ Route::delete('/uang-keluar/{id}', [UangKeluarController::class, 'Destroy']);
             Route::put('/{id}', [UangMasukController::class, 'update']);  // PUT update pemasukan
             Route::delete('/{id}', [UangMasukController::class, 'destroy']); // DELETE hapus pemasukan
         });
+        
+        Route::prefix('uang-keluar')->group(function () {
+            Route::get('/', [UangKeluarController::class, 'index']);       // GET semua pengeluaran
+            Route::get('/{id}', [UangKeluarController::class, 'show']);    // GET detail pengeluaran
+            Route::post('/', [UangKeluarController::class, 'store']);      // POST tambah pengeluaran
+            Route::put('/{id}', [UangKeluarController::class, 'update']);  // PUT update pengeluaran
+            Route::delete('/{id}', [UangKeluarController::class, 'destroy']); // DELETE hapus pengeluaran
+        });
 
+    });
+
+    Route::middleware('auth.jwt:admin,mentor,peserta,panitia')->group(function () {
 
         // Daftar Hadir Peserta dan Panitia Routes
         Route::post('/presensi/scan', [PresensiController::class, 'scan'])->name('presensi.scan');
-        
-
 
     });
 });
