@@ -47,6 +47,7 @@ class PendaftarPanitiaController extends Controller
             'divisi'             => 'required|string|max:100',
             'komitmen1'          => 'required|in:ya,tidak',
             'komitmen2'          => 'required|in:ya,tidak',
+            'kode_panitia'       => 'required|string|max:50|unique:pendaftar_panitia,kode_panitia',
         ]);
 
         if ($validator->fails()) {
@@ -60,25 +61,8 @@ class PendaftarPanitiaController extends Controller
         try {
             DB::transaction(function () use ($validator, &$panitia) {
                 $data = $validator->validated();
-                $event = Event::findOrFail($data['event_id']);
 
-                // Hitung nomor urut terakhir dari kode_panitia yang sesuai event
-                $lastPanitia = PendaftarPanitia::where('event_id', $data['event_id'])
-                    ->where('kode_panitia', 'like', $event->kode_event . '-PAN-%')
-                    ->orderBy('id', 'desc')
-                    ->first();
-
-                if ($lastPanitia) {
-                    // Ambil angka terakhir dari kode_panitia
-                    preg_match('/(\d+)$/', $lastPanitia->kode_panitia, $matches);
-                    $noUrut = isset($matches[1]) ? (int)$matches[1] + 1 : 1;
-                } else {
-                    $noUrut = 1;
-                }
-
-                $kodePanitia = $event->kode_event . '-PAN-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
-
-                // Cek unik NIM/email per event saja
+                // Cek unik NIM/email per event
                 if (PendaftarPanitia::where('event_id', $data['event_id'])->where('NIM', $data['NIM'])->exists()) {
                     throw new \Exception('NIM sudah terdaftar di event ini');
                 }
@@ -86,12 +70,10 @@ class PendaftarPanitiaController extends Controller
                     throw new \Exception('Email sudah terdaftar di event ini');
                 }
 
-                // Buat panitia
-                $panitia = PendaftarPanitia::create(array_merge($data, [
-                    'kode_panitia' => $kodePanitia
-                ]));
+                // Buat panitia tanpa auto kode_panitia
+                $panitia = PendaftarPanitia::create($data);
 
-                // Buat penerimaan otomatis untuk panitia
+                // Buat penerimaan otomatis
                 PenerimaanPanitia::create([
                     'pendaftaran_panitia_id' => $panitia->id,
                     'tanggal_penerimaan'     => null,
