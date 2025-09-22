@@ -18,7 +18,7 @@ Route::put('/event/{id}', [EventController::class, 'Update']);
 Route::delete('/event/{id}', [EventController::class, 'Destroy']);
 
 Route::get('/keuangan', [KeuanganController::class, 'Index']);
-Route::get('/keuangan/total-saldo', [KeuanganController::class, 'TotalSaldo']);
+Route::get('/keuangan/report', [KeuanganController::class, 'Report']);
 Route::get('/keuangan/{id}', [KeuanganController::class, 'Show']);
 Route::post('/keuangan', [KeuanganController::class, 'Store']);
 Route::put('/keuangan/{id}', [KeuanganController::class, 'Update']);

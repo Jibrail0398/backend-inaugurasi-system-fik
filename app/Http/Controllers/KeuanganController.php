@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keuangan;
+use App\Models\UangMasuk;
+use App\Models\UangKeluar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -185,15 +187,23 @@ class KeuanganController extends Controller
         }               
     }
 
-    public function TotalSaldo()
+    public function Report()
     {
         try {
 
             $totalSaldo = Keuangan::sum('saldo');
 
+            $totalUangMasuk = UangMasuk::sum('jumlah_uang_masuk');
+
+            $totalUangKeluar = UangKeluar::sum('jumlah_pengeluaran');
+
             return response()->json([
                 'success' => true,
-                'total_saldo' => $totalSaldo 
+                'Laporan keuangan' => [
+                    'total_saldo' => $totalSaldo,
+                    'total_pemasukan' => $totalUangMasuk,
+                    'total_pengeluaran' => $totalUangKeluar
+                ]
             ], 200);
 
         } catch (\Throwable $e) {
