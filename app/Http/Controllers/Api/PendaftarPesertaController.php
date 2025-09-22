@@ -54,6 +54,8 @@ class PendaftarPesertaController extends Controller
             'riwayat_penyakit'   => 'nullable|string|max:255',
             'divisi'             => 'required|string|max:100',
             'bukti_pembayaran'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            // kode_peserta sekarang wajib diinput dari request
+            'kode_peserta'       => 'required|string|max:50|unique:pendaftar_peserta,kode_peserta',
         ]);
 
         if ($validator->fails()) {
@@ -67,12 +69,6 @@ class PendaftarPesertaController extends Controller
         try {
             DB::transaction(function () use ($validator, &$peserta, $request, $event) {
                 $data = $validator->validated();
-
-                // Hitung kode peserta per event
-                $lastPeserta = PendaftarPeserta::where('event_id', $event->id)
-                                ->orderBy('id', 'desc')->first();
-                $noUrut = $lastPeserta ? ((int) substr($lastPeserta->kode_peserta, strlen($event->kode_event)+1)) + 1 : 1;
-                $kodePeserta = $event->kode_event . '-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
 
                 // Cek unik NIM & email di event ini
                 if (PendaftarPeserta::where('event_id', $event->id)->where('NIM', $data['NIM'])->exists()) {
@@ -90,10 +86,9 @@ class PendaftarPesertaController extends Controller
                     $data['bukti_pembayaran'] = $path;
                 }
 
-                // Buat peserta
+                // Buat peserta tanpa auto kode_peserta
                 $peserta = PendaftarPeserta::create(array_merge($data, [
-                    'event_id'     => $event->id,
-                    'kode_peserta' => $kodePeserta
+                    'event_id' => $event->id,
                 ]));
 
                 // Buat penerimaan otomatis
@@ -117,6 +112,7 @@ class PendaftarPesertaController extends Controller
             ], 500);
         }
     }
+
 
 
     public function update(Request $request, $id)
