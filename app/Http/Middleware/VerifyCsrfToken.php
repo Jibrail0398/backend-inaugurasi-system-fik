@@ -12,7 +12,10 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        // Tambahkan route pendaftaran peserta agar tidak menghasilkan 419 saat testing API tanpa token
+        // Tambahkan route pendaftaran peserta dan panitia agar tidak menghasilkan 419 saat testing API tanpa token
         'pendaftaran-peserta',
+        'pendaftaran-panitia',
+        'peserta/*/terima',
+        'peserta/*/tolak',
     ];
 }

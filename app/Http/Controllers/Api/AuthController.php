@@ -11,6 +11,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Validator;
 
+
 class AuthController extends Controller
 {
     private $secret;
@@ -21,7 +22,6 @@ class AuthController extends Controller
     }
 
     // API untuk login (Login dengan NIM dan password)
-
 
     public function login(Request $request)
     {

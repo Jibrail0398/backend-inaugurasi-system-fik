@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PendaftaranPesertaController;
+use App\Http\Controllers\PendaftaranPanitiaController;
+use App\Http\Controllers\PenerimaanPeserta;
 
 /*
 |--------------------------------------------------------------------------
