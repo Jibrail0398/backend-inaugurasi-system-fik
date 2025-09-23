@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('pendaptar_panitia', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
+            $table->string('kode_panitia')->unique()->nullable();
             $table->string('nama');
             $table->string('NIM')->length(16);
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('nomor_whatapp')->length(14);
             $table->string('angkatan')->length(4);
             $table->string('kelas');
@@ -27,7 +29,6 @@ return new class extends Migration
             $table->string('divisi');
             $table->enum('komitmen1', ['ya', 'tidak']);
             $table->enum('komitmen2', ['ya', 'tidak']);
-            $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
             $table->timestamps();
         });
     }

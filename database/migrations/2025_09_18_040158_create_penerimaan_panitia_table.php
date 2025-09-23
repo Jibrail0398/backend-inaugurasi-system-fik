@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('penerimaan_panitia', function (Blueprint $table) {
             $table->id();
-            $table->enum('status_penerimaan', ['diterima', 'tidak diterima']);
-            $table->date('tanggal_penerimaan');
+            $table->enum('status_penerimaan', ['diterima', 'tidak diterima'])->nullable();
+            $table->date('tanggal_penerimaan')->nullable();
             $table->foreignId('pendaftaran_panitia_id')->constrained('pendaptar_panitia')->onDelete('cascade');
+            $table->foreignId('konfirmasi_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('update_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
