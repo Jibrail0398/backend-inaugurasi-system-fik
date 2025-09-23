@@ -29,7 +29,7 @@ class UangKeluarController extends Controller
             'jumlah_pengeluaran' => 'required|integer',
             'alasan_pengeluaran' => 'required|string|max:255',
             'tanggal_pengeluaran' => 'required|date',
-            'bukti_pengeluaran' => 'required|image|mimes:jpeg,png,jpg|max:2048', // wajib foto
+            'bukti_pengeluaran' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'keuangan_id' => 'required|exists:keuangan,id',
         ]);
 

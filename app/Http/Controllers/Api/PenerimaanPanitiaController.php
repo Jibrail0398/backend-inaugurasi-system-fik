@@ -16,6 +16,12 @@ use Illuminate\Support\Facades\Storage;
 
 class PenerimaanPanitiaController extends Controller
 {
+    public function __construct()
+    {
+        // Pastikan middleware JWT dipanggil di route
+        // $this->middleware('auth.jwt:admin,mentor');
+    }
+
     public function index()
     {
         $data = PenerimaanPanitia::with(['pendaftarPanitia', 'daftarHadir'])->get();
@@ -46,18 +52,27 @@ class PenerimaanPanitiaController extends Controller
     public function update(Request $request, $id)
     {
         $penerimaan = PenerimaanPanitia::with('pendaftarPanitia.event')->findOrFail($id);
+        $user = $request->user ?? null;
 
         DB::beginTransaction();
         try {
+            // Update status penerimaan & updated_by
             $penerimaan->status_penerimaan = $request->status_penerimaan ?? $penerimaan->status_penerimaan;
+            $penerimaan->update_by = $user ? $user->id : null;
 
-            // Jika status diterima
+            // Jika diterima
             if (($request->status_penerimaan ?? '') === 'diterima') {
                 $penerimaan->tanggal_penerimaan = now();
+
+                // konfirmasi_by hanya diisi sekali
+                if (!$penerimaan->konfirmasi_by) {
+                    $penerimaan->konfirmasi_by = $user ? $user->id : null;
+                }
+
                 $penerimaan->save();
 
                 $pendaftar = $penerimaan->pendaftarPanitia;
-                $event     = $pendaftar->event;
+                $event = $pendaftar->event;
                 $kodeEvent = $event->kode_event ?? 'umum';
 
                 // Generate kode_panitia jika belum ada
@@ -67,20 +82,17 @@ class PenerimaanPanitiaController extends Controller
                         ->orderBy('id', 'desc')
                         ->first();
 
+                    $noUrut = 1;
                     if ($lastPanitia && preg_match('/(\d+)$/', $lastPanitia->kode_panitia, $matches)) {
                         $noUrut = (int) $matches[1] + 1;
-                    } else {
-                        $noUrut = 1;
                     }
 
                     $kodePanitia = $kodeEvent . '-PAN-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
 
-                    $pendaftar->update([
-                        'kode_panitia' => $kodePanitia
-                    ]);
+                    $pendaftar->update(['kode_panitia' => $kodePanitia]);
                 }
 
-                // Buat folder QR
+                // Folder QR
                 $dir = "qrcodes/panitia/{$kodeEvent}/";
                 if (!Storage::disk('public')->exists($dir)) {
                     Storage::disk('public')->makeDirectory($dir, 0777, true);
@@ -90,13 +102,13 @@ class PenerimaanPanitiaController extends Controller
                 $fileDatang = $dir . $pendaftar->kode_panitia . '_datang.png';
                 QrCode::format('png')->size(250)
                     ->generate(route('presensi.scan', ['role'=>'panitia','id'=>$penerimaan->id,'type'=>'datang']),
-                            Storage::disk('public')->path($fileDatang));
+                        Storage::disk('public')->path($fileDatang));
 
                 // QR Pulang
                 $filePulang = $dir . $pendaftar->kode_panitia . '_pulang.png';
                 QrCode::format('png')->size(250)
                     ->generate(route('presensi.scan', ['role'=>'panitia','id'=>$penerimaan->id,'type'=>'pulang']),
-                            Storage::disk('public')->path($filePulang));
+                        Storage::disk('public')->path($filePulang));
 
                 // Daftar hadir
                 DaftarHadirPanitia::updateOrCreate(
@@ -118,6 +130,7 @@ class PenerimaanPanitiaController extends Controller
                         'panitia'
                     )
                 );
+
             } else {
                 $penerimaan->save(); // status lain
             }

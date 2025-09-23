@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('qr_code_datang')->nullable();
             $table->string('qr_code_pulang')->nullable();
             $table->foreignId('penerimaan_panitia_id')->constrained('penerimaan_panitia')->onDelete('cascade');
-            $table->foreignId('absen_by')->constrained('users')->onDelete('cascade')->nullable();
-            $table->foreignId('update_by')->constrained('users')->onDelete('cascade')->nullable();
+            $table->foreignId('create_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('update_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

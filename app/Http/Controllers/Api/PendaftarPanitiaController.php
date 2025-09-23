@@ -29,10 +29,18 @@ class PendaftarPanitiaController extends Controller
     /**
      * Tambah panitia baru
      */
-    public function store(Request $request)
+    public function store(Request $request , $kode_event)
     {
+
+        $event = Event::where('kode_event', $kode_event)->first();
+        if (!$event) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Event dengan kode ' . $kode_event . ' tidak ditemukan'
+            ], 404);
+        }
+
         $validator = Validator::make($request->all(), [
-            'event_id'           => 'required|exists:event,id',
             'nama'               => 'required|string|max:255',
             'NIM'                => 'required|string|max:16',
             'email'              => 'required|email',
@@ -47,7 +55,6 @@ class PendaftarPanitiaController extends Controller
             'divisi'             => 'required|string|max:100',
             'komitmen1'          => 'required|in:ya,tidak',
             'komitmen2'          => 'required|in:ya,tidak',
-            'kode_panitia'       => 'required|string|max:50|unique:pendaftar_panitia,kode_panitia',
         ]);
 
         if ($validator->fails()) {
@@ -59,20 +66,21 @@ class PendaftarPanitiaController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($validator, &$panitia) {
+            DB::transaction(function () use ($validator, &$panitia , $request, $event) {
                 $data = $validator->validated();
 
                 // Cek unik NIM/email per event
-                if (PendaftarPanitia::where('event_id', $data['event_id'])->where('NIM', $data['NIM'])->exists()) {
+                if (PendaftarPanitia::where('event_id', $event->id)->where('NIM', $data['NIM'])->exists()) {
                     throw new \Exception('NIM sudah terdaftar di event ini');
                 }
-                if (PendaftarPanitia::where('event_id', $data['event_id'])->where('email', $data['email'])->exists()) {
+                if (PendaftarPanitia::where('event_id', $event->id)->where('email', $data['email'])->exists()) {
                     throw new \Exception('Email sudah terdaftar di event ini');
                 }
 
                 // Buat panitia tanpa auto kode_panitia
-                $panitia = PendaftarPanitia::create($data);
-
+                $panitia = PendaftarPanitia::create(array_merge($data, [
+                    'event_id' => $event->id,
+                ]));
                 // Buat penerimaan otomatis
                 PenerimaanPanitia::create([
                     'pendaftaran_panitia_id' => $panitia->id,

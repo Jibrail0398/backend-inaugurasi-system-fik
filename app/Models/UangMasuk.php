@@ -20,7 +20,9 @@ class UangMasuk extends Model
         'tanggal_pemasukan',
         'bukti_pemasukan',
         'keuangan_id',
-        'peserta_id'
+        'peserta_id',
+        'created_at',
+        'updated_at',
     ];
 
     /**

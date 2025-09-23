@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('saldo')->nullable();
             $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
-            $table->foreignId('create_by')->constrained('users')->onDelete('cascade')->nullable();
-            $table->foreignId('update_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('updated_by')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
