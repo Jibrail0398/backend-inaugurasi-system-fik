@@ -21,6 +21,12 @@ class Keuangan extends Model
     protected $fillable = [
         'saldo',
         'event_id',
+        'created_by',
+        'updated_by',
+        'deleted_by',
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
 
     /**
@@ -46,4 +52,18 @@ class Keuangan extends Model
     {
         return $this->uangMasuk->sum('jumlah_uang_masuk');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+    public function deleter()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
 }

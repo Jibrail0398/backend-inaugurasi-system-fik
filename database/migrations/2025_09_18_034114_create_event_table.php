@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('event', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_event')->unique();
+            $table->string('kode_event')->unique()->nullable();
             $table->string('nama_event');
             $table->string('jenis');
             $table->string('tema');
@@ -21,11 +21,16 @@ return new class extends Migration
             $table->integer('harga_pendaftaran_peserta')->default(0);
             $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
             $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('update_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('delete_by')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            // Foreign key constraints
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
+
         });
     }
 

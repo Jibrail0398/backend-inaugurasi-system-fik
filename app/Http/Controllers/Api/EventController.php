@@ -22,7 +22,6 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'kode_event' => 'required|string|unique:event,kode_event',
             'nama_event' => 'required|string|max:255',
@@ -44,10 +43,10 @@ class EventController extends Controller
 
         $data = $validator->validated();
 
-        // Tambahkan created_by & updated_by otomatis
-        $userId = auth()->id() ?? null;
-        $data['created_by'] = $userId;
-        $data['updated_by'] = $userId;
+        // Ambil user dari middleware AuthJWT
+        $user = $request->user ?? null;
+        $data['created_by'] = $user ? $user->id : null;
+        $data['updated_by'] = $user ? $user->id : null;
 
         $event = Event::create($data);
 
@@ -107,7 +106,10 @@ class EventController extends Controller
         }
 
         $data = $validator->validated();
-        $data['updated_by'] = auth()->id() ?? null;
+
+        // Gunakan user dari middleware
+        $user = $request->user ?? null;
+        $data['updated_by'] = $user ? $user->id : null;
 
         $event->update($data);
 

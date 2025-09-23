@@ -15,7 +15,7 @@ class PenerimaanPeserta extends Model
     use HasFactory;
 
     protected $table = 'penerimaan_peserta';
-    protected $fillable = ['status_pembayaran','tanggal_penerimaan','pendaptar_peserta_id'];
+    protected $fillable = ['status_pembayaran','tanggal_penerimaan','pendaptar_peserta_id', 'konfirmasi_by', 'updated_by', 'created_at', 'updated_at'];
 
     protected static function booted()
     {
@@ -63,18 +63,6 @@ class PenerimaanPeserta extends Model
                     ]
                 );
 
-                // Kirim email
-                try {
-                    Mail::to($pendaftar->email)->send(
-                        new QrCodeMail(
-                            $pendaftar,
-                            Storage::disk('public')->path($fileDatang),
-                            Storage::disk('public')->path($filePulang)
-                        )
-                    );
-                } catch (\Exception $e) {
-                    \Log::error("Gagal kirim email QR Code: ".$e->getMessage());
-                }
 
                 // Set tanggal penerimaan
                 $penerimaan->tanggal_penerimaan = now();
@@ -92,5 +80,13 @@ class PenerimaanPeserta extends Model
     public function daftarHadir()
     {
         return $this->hasOne(DaftarHadirPeserta::class, 'penerimaan_peserta_id');
+    }
+    public function konfirmator()
+    {
+        return $this->belongsTo(User::class, 'konfirmasi_by');
+    }
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

@@ -12,6 +12,7 @@ use App\Mail\QrCodeMail;
 use Illuminate\Support\Facades\Mail;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PenerimaanPesertaController extends Controller
 {
@@ -44,118 +45,116 @@ class PenerimaanPesertaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $penerimaan = PenerimaanPeserta::with('pendaftarPeserta.event.keuangan')->find($id);
+        $penerimaan = PenerimaanPeserta::with('pendaftarPeserta.event.keuangan')->findOrFail($id);
+        $user = $request->user ?? null; // pastikan middleware JWT mengisi $request->user
 
-        if (!$penerimaan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data penerimaan peserta tidak ditemukan'
-            ], 404);
-        }
+        DB::beginTransaction();
+        try {
+            $status = $request->status_pembayaran ?? $penerimaan->status_pembayaran;
+            $penerimaan->status_pembayaran = $status;
+            $penerimaan->update_by = $user ? $user->id : null;
 
-        // Update status pembayaran
-        $status = $request->status_pembayaran ?? $penerimaan->status_pembayaran;
-        $penerimaan->status_pembayaran = $status;
+            if ($status === 'lunas') {
+                $penerimaan->tanggal_penerimaan = now();
+                if (!$penerimaan->konfirmasi_by) {
+                    $penerimaan->konfirmasi_by = $user ? $user->id : null;
+                }
+                $penerimaan->save();
 
-        if ($status === 'lunas') {
-            $penerimaan->tanggal_penerimaan = now();
-            $penerimaan->save();
+                $pendaftar = $penerimaan->pendaftarPeserta;
+                $event = $pendaftar->event;
 
-            $pendaftar = $penerimaan->pendaftarPeserta;
-            if (!$pendaftar) {
-                return response()->json(['success' => false, 'message' => 'Data pendaftar tidak ditemukan'], 404);
-            }
+                // Generate kode peserta jika belum ada
+                if (!$pendaftar->kode_peserta) {
+                    $lastPeserta = $event->pendaftarPeserta()
+                        ->whereNotNull('kode_peserta')
+                        ->orderBy('id', 'desc')
+                        ->first();
 
-            $event = $pendaftar->event;
-            if (!$event) {
-                return response()->json(['success' => false, 'message' => 'Event peserta tidak ditemukan'], 404);
-            }
+                    $noUrut = 1;
+                    if ($lastPeserta && preg_match('/(\d+)$/', $lastPeserta->kode_peserta, $matches)) {
+                        $noUrut = (int)$matches[1] + 1;
+                    }
 
-            // ✅ Generate kode peserta
-            if (!$pendaftar->kode_peserta) {
-                $lastPeserta = $event->pendaftarPeserta()
-                    ->whereNotNull('kode_peserta')
-                    ->orderBy('id', 'desc')
-                    ->first();
+                    $kodePeserta = $event->kode_event . '-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
+                    $pendaftar->update(['kode_peserta' => $kodePeserta]);
+                }
 
-                $noUrut = $lastPeserta
-                    ? ((int) substr($lastPeserta->kode_peserta, strlen($event->kode_event) + 1)) + 1
-                    : 1;
+                // Cek keuangan
+                $keuangan = $event->keuangan;
+                if (!$keuangan) {
+                    $keuangan = Keuangan::create(['event_id' => $event->id]);
+                }
 
-                $kodePeserta = $event->kode_event . '-' . str_pad($noUrut, 3, '0', STR_PAD_LEFT);
+                // Simpan uang masuk
+                if ($event->harga_pendaftaran_peserta > 0) {
+                    UangMasuk::updateOrCreate(
+                        ['peserta_id' => $pendaftar->id, 'keuangan_id' => $keuangan->id],
+                        [
+                            'jumlah_uang_masuk' => $event->harga_pendaftaran_peserta,
+                            'asal_pemasukan'    => $pendaftar->nama,
+                            'tanggal_pemasukan' => now()->toDateString(),
+                            'bukti_pemasukan'   => $pendaftar->bukti_pembayaran,
+                        ]
+                    );
+                }
 
-                $pendaftar->update(['kode_peserta' => $kodePeserta]);
-            }
+                // QR datang & pulang
+                $kodeEvent = $event->kode_event ?? 'umum';
+                $dir = "qrcodes/{$kodeEvent}";
+                if (!Storage::disk('public')->exists($dir)) {
+                    Storage::disk('public')->makeDirectory($dir, 0777, true);
+                }
 
-            // ✅ Buat/cek keuangan
-            $keuangan = $event->keuangan;
-            if (!$keuangan) {
-                $keuangan = Keuangan::create([
-                    'event_id' => $event->id,
-                ]);
-            }
+                $fileDatang = "{$dir}/{$pendaftar->kode_peserta}_datang.png";
+                $filePulang = "{$dir}/{$pendaftar->kode_peserta}_pulang.png";
 
-            // ✅ Simpan uang masuk
-            if ($event->harga_pendaftaran_peserta > 0) {
-                UangMasuk::updateOrCreate(
+                QrCode::format('png')->size(250)
+                    ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'datang']),
+                        Storage::disk('public')->path($fileDatang));
+                QrCode::format('png')->size(250)
+                    ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'pulang']),
+                        Storage::disk('public')->path($filePulang));
+
+                DaftarHadirPeserta::updateOrCreate(
+                    ['penerimaan_peserta_id' => $penerimaan->id],
                     [
-                        'peserta_id'  => $pendaftar->id,
-                        'keuangan_id' => $keuangan->id,
-                    ],
-                    [
-                        'jumlah_uang_masuk' => $event->harga_pendaftaran_peserta,
-                        'asal_pemasukan'    => $pendaftar->nama,
-                        'tanggal_pemasukan' => now()->toDateString(),
-                        'bukti_pemasukan'   => $pendaftar->bukti_pembayaran,
+                        'presensi_datang' => 'tidak hadir',
+                        'presensi_pulang' => 'belum pulang',
+                        'qr_code_datang'  => $fileDatang,
+                        'qr_code_pulang'  => $filePulang
                     ]
                 );
+
+                // Kirim email QR
+                try {
+                    Mail::to($pendaftar->email)->send(new QrCodeMail(
+                        $pendaftar,
+                        Storage::disk('public')->path($fileDatang),
+                        Storage::disk('public')->path($filePulang)
+                    ));
+                } catch (\Exception $e) {
+                    \Log::error("Gagal kirim email QR Code: " . $e->getMessage());
+                }
+            } else {
+                $penerimaan->save();
             }
 
-            // ✅ Generate QR datang & pulang
-            $kodeEvent = $event->kode_event ?? 'umum';
-            $dir = "qrcodes/{$kodeEvent}";
-            if (!Storage::disk('public')->exists($dir)) {
-                Storage::disk('public')->makeDirectory($dir, 0777, true);
-            }
+            DB::commit();
 
-            $fileDatang = "{$dir}/{$pendaftar->kode_peserta}_datang.png";
-            $filePulang = "{$dir}/{$pendaftar->kode_peserta}_pulang.png";
+            return response()->json([
+                'success' => true,
+                'message' => 'Data penerimaan peserta berhasil diperbarui',
+                'data'    => $penerimaan
+            ]);
 
-            QrCode::format('png')->size(250)
-                ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'datang']),
-                    Storage::disk('public')->path($fileDatang));
-            QrCode::format('png')->size(250)
-                ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'pulang']),
-                    Storage::disk('public')->path($filePulang));
-
-            DaftarHadirPeserta::updateOrCreate(
-                ['penerimaan_peserta_id' => $penerimaan->id],
-                [
-                    'presensi_datang' => 'tidak hadir',
-                    'presensi_pulang' => 'belum pulang',
-                    'qr_code_datang'  => $fileDatang,
-                    'qr_code_pulang'  => $filePulang
-                ]
-            );
-
-            try {
-                Mail::to($pendaftar->email)->send(new QrCodeMail(
-                    $pendaftar,
-                    Storage::disk('public')->path($fileDatang),
-                    Storage::disk('public')->path($filePulang)
-                ));
-            } catch (\Exception $e) {
-                \Log::error("Gagal kirim email QR Code: " . $e->getMessage());
-            }
-        } else {
-            $penerimaan->save();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal update penerimaan peserta',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data penerimaan berhasil diperbarui',
-            'data'    => $penerimaan
-        ]);
     }
 }

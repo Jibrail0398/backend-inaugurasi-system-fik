@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('asal_pemasukan')->nullable();
             $table->date('tanggal_pemasukan')->nullable();
             $table->string('bukti_pemasukan')->nullable();
-            $table->foreignId('keuangan_id')->constrained('keuangan')->onDelete('cascade');
-            $table->foreignId('peserta_id')->constrained('pendaptar_peserta')->onDelete('cascade')->nullable();
+            $table->foreignId('keuangan_id')->nullable()->constrained('keuangan')->onDelete('cascade');
+            $table->foreignId('peserta_id')->nullable()->constrained('pendaptar_peserta')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -13,21 +13,34 @@ use App\Models\Event;
 class PendaftarPesertaController extends Controller
 {
 
-    public function __construct()
-    {
-        
-    }
-
     public function index()
     {
-        $peserta = PendaftarPeserta::with('event')->get();
+        try {
+            $peserta = PendaftarPeserta::with('event')->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Daftar semua peserta',
-            'data'    => $peserta
-        ], 200);
+            if ($peserta->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data peserta tidak ditemukan',
+                    'data'    => []
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Daftar semua peserta',
+                'data'    => $peserta
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function store(Request $request, $kode_event)
     {
@@ -54,8 +67,6 @@ class PendaftarPesertaController extends Controller
             'riwayat_penyakit'   => 'nullable|string|max:255',
             'divisi'             => 'required|string|max:100',
             'bukti_pembayaran'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            // kode_peserta sekarang wajib diinput dari request
-            'kode_peserta'       => 'required|string|max:50|unique:pendaftar_peserta,kode_peserta',
         ]);
 
         if ($validator->fails()) {

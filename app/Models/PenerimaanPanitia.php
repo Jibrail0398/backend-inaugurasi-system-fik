@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Mail\QrCodeMail;
 use App\Models\DaftarHadirPanitia;
@@ -19,42 +20,64 @@ class PenerimaanPanitia extends Model
         'pendaftaran_panitia_id',
         'status_penerimaan',
         'tanggal_penerimaan',
+        'konfirmasi_by',
+        'updated_by',
+        'created_at',
+        'updated_at',
     ];
 
     protected static function booted()
     {
         static::created(function ($penerimaan) {
-            $panitia = $penerimaan->pendaftarPanitia;
 
-            // ambil kode event dari relasi
-            $kodeEvent = $panitia->event->kode_event ?? 'umum';
+            $pendaftar = $penerimaan->pendaftarPanitia;
+            $kodeEvent = $pendaftar->event->kode_event ?? 'umum';
 
-            // Buat folder qr_codes/{kode_event} kalau belum ada
-            $dir = storage_path("app/public/qrcodes/{$kodeEvent}/");
-            if (!file_exists($dir)) {
-                mkdir($dir, 0777, true);
+            // Buat folder QR jika belum ada
+            $dir = "qrcodes/{$kodeEvent}";
+            if (!Storage::disk('public')->exists($dir)) {
+                Storage::disk('public')->makeDirectory($dir, 0777, true);
             }
 
-            // Generate QR baru
-            $fileName = 'qrcode_panitia_' . $penerimaan->id . '.png';
-            $filePath = $dir . $fileName;
+            // File QR
+            $fileDatang = "{$dir}/{$pendaftar->kode_panitia}_datang.png";
+            $filePulang = "{$dir}/{$pendaftar->kode_panitia}_pulang.png";
 
-            QrCode::format('png')->size(300)->generate(
-                route('presensi.scan', ['id' => $penerimaan->id]),
-                $filePath
-            );
+            // Generate QR Datang
+            QrCode::format('png')->size(250)
+                ->generate(route('presensi.scan', [
+                    'role' => 'panitia',
+                    'id'   => $penerimaan->id,
+                    'type' => 'datang'
+                ]), Storage::disk('public')->path($fileDatang));
 
-            // Simpan daftar hadir panitia
+            // Generate QR Pulang
+            QrCode::format('png')->size(250)
+                ->generate(route('presensi.scan', [
+                    'role' => 'panitia',
+                    'id'   => $penerimaan->id,
+                    'type' => 'pulang'
+                ]), Storage::disk('public')->path($filePulang));
+
+            // Buat daftar hadir
             $daftar = DaftarHadirPanitia::create([
                 'penerimaan_panitia_id' => $penerimaan->id,
                 'presensi_datang' => 'tidak hadir',
                 'presensi_pulang' => 'belum pulang',
-                'qr_code' => "qrcodes/{$kodeEvent}/" . $fileName,
+                'qr_code_datang'  => $fileDatang,
+                'qr_code_pulang'  => $filePulang,
             ]);
 
-            // Kirim email dengan QR Code
-            $qrPath = storage_path('app/public/' . $daftar->qr_code);
-            Mail::to($panitia->email)->send(new QrCodeMail($panitia, $qrPath));
+            // Set tanggal penerimaan
+            $penerimaan->tanggal_penerimaan = now();
+
+            // Kirim email dengan 2 QR Code
+            Mail::to($pendaftar->email)->send(new QrCodeMail(
+                $pendaftar,
+                Storage::disk('public')->path($fileDatang),
+                Storage::disk('public')->path($filePulang),
+                'panitia'
+            ));
         });
     }
 
@@ -66,5 +89,15 @@ class PenerimaanPanitia extends Model
     public function daftarHadir()
     {
         return $this->hasOne(DaftarHadirPanitia::class, 'penerimaan_panitia_id');
+    }
+
+    public function konfirmator()
+    {
+        return $this->belongsTo(User::class, 'konfirmasi_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }
