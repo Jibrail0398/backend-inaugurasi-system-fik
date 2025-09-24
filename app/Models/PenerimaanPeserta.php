@@ -40,6 +40,7 @@ class PenerimaanPeserta extends Model
                 // Generate QR Code
                 QrCode::format('png')->size(250)
                     ->generate(route('presensi.scan', [
+                        'event' => $kodeEvent,
                         'role' => 'peserta',
                         'id'   => $penerimaan->id,
                         'type' => 'datang'
@@ -47,6 +48,7 @@ class PenerimaanPeserta extends Model
 
                 QrCode::format('png')->size(250)
                     ->generate(route('presensi.scan', [
+                        'event' => $kodeEvent,
                         'role' => 'peserta',
                         'id'   => $penerimaan->id,
                         'type' => 'pulang'
@@ -88,5 +90,16 @@ class PenerimaanPeserta extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+    public function event()
+    {
+        return $this->hasOneThrough(
+            Event::class,
+            PendaftarPeserta::class,
+            'id', // Foreign key on PendaftarPeserta table
+            'id', // Foreign key on Event table
+            'pendaptar_peserta_id', // Local key on PenerimaanPeserta table
+            'event_id' // Local key on PendaftarPeserta table
+        );
     }
 }

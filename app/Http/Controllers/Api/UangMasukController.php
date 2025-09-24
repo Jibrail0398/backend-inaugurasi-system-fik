@@ -29,7 +29,7 @@ class UangMasukController extends Controller
             'jumlah_uang_masuk' => 'required|integer',
             'asal_pemasukan' => 'required|string|max:255',
             'tanggal_pemasukan' => 'required|date',
-            'bukti_pemasukan' => 'required|image|mimes:jpeg,png,jpg|max:2048', // wajib foto
+            'bukti_pemasukan' => 'required|image|mimes:jpeg,png,jpg|max:5000', // wajib foto
             'keuangan_id' => 'required|exists:keuangan,id',
         ]);
 
@@ -40,7 +40,7 @@ class UangMasukController extends Controller
         // Upload foto bukti
         if ($request->hasFile('bukti_pemasukan')) {
             $file = $request->file('bukti_pemasukan');
-            $path = $file->store('bukti_pemasukan', 'public'); // disimpan di storage/app/public/bukti_pemasukan
+            $path = $file->store('bukti_pemasukan', 'public');
             $data['bukti_pemasukan'] = $path;
         }
 

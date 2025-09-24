@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PresensiController;
 use App\Http\Controllers\Api\DaftarHadirPanitiaController;
 use App\Http\Controllers\Api\PendaftarPanitiaController;
 use App\Http\Controllers\Api\PenerimaanPanitiaController;
+use App\Http\Controllers\Api\KeuanganController;
 use App\Http\Controllers\Api\UangMasukController;
 use App\Http\Controllers\Api\UangKeluarController;
 
@@ -54,21 +55,27 @@ Route::prefix('v1')->group(function () {
 
         // Penerimaan Peserta Routes
         Route::prefix('penerimaan-peserta')->group(function () {
-            Route::get('/', [PenerimaanPesertaController::class,'index']);
+            Route::get('/index', [PenerimaanPesertaController::class,'index']);
             Route::get('/show/{id}', [PenerimaanPesertaController::class,'show']);
             Route::put('/update/{id}', [PenerimaanPesertaController::class,'update']);
         });
 
         // Penerimaan Panitia Routes
         Route::prefix('penerimaan-panitia')->group(function () {
-            Route::get('/', [PenerimaanPanitiaController::class,'index']);
+            Route::get('/index', [PenerimaanPanitiaController::class,'index']);
             Route::get('/show/{id}', [PenerimaanPanitiaController::class,'show']);
             Route::put('/update/{id}', [PenerimaanPanitiaController::class,'update']);
         });
 
         // Keuangan Routes
+        Route::prefix('keuangan')->group(function () {
+            Route::get('/index', [KeuanganController::class, 'index']);       
+            Route::get('/show/{id}', [KeuanganController::class, 'show']);    
+        });
+
+        // Uang Masuk Routes
         Route::prefix('uang-masuk')->group(function () {
-            Route::get('/', [UangMasukController::class, 'index']);      
+            Route::get('/index', [UangMasukController::class, 'index']);      
             Route::get('/show/{id}', [UangMasukController::class, 'show']);    
             Route::post('/add', [UangMasukController::class, 'store']);      
             Route::put('/update/{id}', [UangMasukController::class, 'update']);  
@@ -77,7 +84,7 @@ Route::prefix('v1')->group(function () {
         
         // Uang Keluar Routes
         Route::prefix('uang-keluar')->group(function () {
-            Route::get('/', [UangKeluarController::class, 'index']);       
+            Route::get('/index', [UangKeluarController::class, 'index']);       
             Route::get('/show/{id}', [UangKeluarController::class, 'show']);    
             Route::post('/add', [UangKeluarController::class, 'store']);      
             Route::put('/update/{id}', [UangKeluarController::class, 'update']); 

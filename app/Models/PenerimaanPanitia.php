@@ -46,6 +46,7 @@ class PenerimaanPanitia extends Model
             // Generate QR Datang
             QrCode::format('png')->size(250)
                 ->generate(route('presensi.scan', [
+                    'event' => $kodeEvent,
                     'role' => 'panitia',
                     'id'   => $penerimaan->id,
                     'type' => 'datang'
@@ -54,6 +55,7 @@ class PenerimaanPanitia extends Model
             // Generate QR Pulang
             QrCode::format('png')->size(250)
                 ->generate(route('presensi.scan', [
+                    'event' => $kodeEvent,
                     'role' => 'panitia',
                     'id'   => $penerimaan->id,
                     'type' => 'pulang'

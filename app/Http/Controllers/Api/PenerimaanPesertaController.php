@@ -45,8 +45,14 @@ class PenerimaanPesertaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $penerimaan = PenerimaanPeserta::with('pendaftarPeserta.event.keuangan')->findOrFail($id);
-        $user = $request->user ?? null; // pastikan middleware JWT mengisi $request->user
+        $penerimaan = PenerimaanPeserta::with('pendaftarPeserta.event.keuangan')->find($id);
+        if (!$penerimaan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Penerimaan peserta tidak ditemukan'
+            ], 404);
+        }
+        $user = $request->user ?? null; 
 
         DB::beginTransaction();
         try {
@@ -92,7 +98,7 @@ class PenerimaanPesertaController extends Controller
                         ['peserta_id' => $pendaftar->id, 'keuangan_id' => $keuangan->id],
                         [
                             'jumlah_uang_masuk' => $event->harga_pendaftaran_peserta,
-                            'asal_pemasukan'    => $pendaftar->nama,
+                            'asal_pemasukan'    => "Daftar Event {$event->kode_event} {$pendaftar->nama}",
                             'tanggal_pemasukan' => now()->toDateString(),
                             'bukti_pemasukan'   => $pendaftar->bukti_pembayaran,
                         ]
@@ -109,12 +115,25 @@ class PenerimaanPesertaController extends Controller
                 $fileDatang = "{$dir}/{$pendaftar->kode_peserta}_datang.png";
                 $filePulang = "{$dir}/{$pendaftar->kode_peserta}_pulang.png";
 
+                // URL dengan tambahan kode_event
+                $urlDatang = route('presensi.scan', [
+                    'kode_event' => $event->kode_event,
+                    'role'       => 'peserta',
+                    'id'         => $penerimaan->id,
+                    'type'       => 'datang'
+                ]);
+                $urlPulang = route('presensi.scan', [
+                    'kode_event' => $event->kode_event,
+                    'role'       => 'peserta',
+                    'id'         => $penerimaan->id,
+                    'type'       => 'pulang'
+                ]);
+
+                // Generate QR Code dengan URL berisi kode_event
                 QrCode::format('png')->size(250)
-                    ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'datang']),
-                        Storage::disk('public')->path($fileDatang));
+                    ->generate($urlDatang, Storage::disk('public')->path($fileDatang));
                 QrCode::format('png')->size(250)
-                    ->generate(route('presensi.scan', ['role'=>'peserta','id'=>$penerimaan->id,'type'=>'pulang']),
-                        Storage::disk('public')->path($filePulang));
+                    ->generate($urlPulang, Storage::disk('public')->path($filePulang));
 
                 DaftarHadirPeserta::updateOrCreate(
                     ['penerimaan_peserta_id' => $penerimaan->id],
@@ -157,4 +176,5 @@ class PenerimaanPesertaController extends Controller
             ], 500);
         }
     }
+
 }

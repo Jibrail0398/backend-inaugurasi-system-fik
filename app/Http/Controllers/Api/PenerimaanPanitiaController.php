@@ -51,7 +51,15 @@ class PenerimaanPanitiaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $penerimaan = PenerimaanPanitia::with('pendaftarPanitia.event')->findOrFail($id);
+
+         $penerimaan = PenerimaanPanitia::with('pendaftarPanitia.event.keuangan')->find($id);
+        if (!$penerimaan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Penerimaan panitia tidak ditemukan'
+            ], 404);
+        }
+
         $user = $request->user ?? null;
 
         DB::beginTransaction();
@@ -98,17 +106,32 @@ class PenerimaanPanitiaController extends Controller
                     Storage::disk('public')->makeDirectory($dir, 0777, true);
                 }
 
-                // QR Datang
                 $fileDatang = $dir . $pendaftar->kode_panitia . '_datang.png';
-                QrCode::format('png')->size(250)
-                    ->generate(route('presensi.scan', ['role'=>'panitia','id'=>$penerimaan->id,'type'=>'datang']),
-                        Storage::disk('public')->path($fileDatang));
 
-                // QR Pulang
+                // Generate QR Datang
+                QrCode::format('png')->size(250)
+                    ->generate(
+                        route('presensi.scan', [
+                            'kode_event' => $kodeEvent,
+                            'role'       => 'panitia',
+                            'id'         => $penerimaan->id,
+                            'type'       => 'datang'
+                        ]),
+                        Storage::disk('public')->path($fileDatang)
+                    );
+
+                // Generate QR Pulang
                 $filePulang = $dir . $pendaftar->kode_panitia . '_pulang.png';
                 QrCode::format('png')->size(250)
-                    ->generate(route('presensi.scan', ['role'=>'panitia','id'=>$penerimaan->id,'type'=>'pulang']),
-                        Storage::disk('public')->path($filePulang));
+                    ->generate(
+                        route('presensi.scan', [
+                            'kode_event' => $kodeEvent,
+                            'role'       => 'panitia',
+                            'id'         => $penerimaan->id,
+                            'type'       => 'pulang'
+                        ]),
+                        Storage::disk('public')->path($filePulang)
+                    );
 
                 // Daftar hadir
                 DaftarHadirPanitia::updateOrCreate(
