@@ -11,7 +11,6 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Validator;
 
-
 class AuthController extends Controller
 {
     private $secret;

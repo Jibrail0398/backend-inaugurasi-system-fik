@@ -31,6 +31,9 @@ return new class extends Migration
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
 
+            $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
+            $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
+            $table->timestamps();
         });
     }
 

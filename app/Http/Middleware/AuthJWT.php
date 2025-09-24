@@ -34,7 +34,7 @@ class AuthJWT
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'm`essage' => 'User tidak ditemukan'
+                    'message' => 'User tidak ditemukan'
                 ], 404);
             }
 
