@@ -240,4 +240,26 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    public function EventWithKeuangan()
+    {
+        try {
+            $events = Event::with('keuangan')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $events
+            ], 200);
+
+        } catch (\Throwable $e) {
+            Log::error('Event EventWithKeuangan error: '.$e->getMessage(), [
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server saat mengambil daftar event'
+            ], 500);
+        }
+    }
 }

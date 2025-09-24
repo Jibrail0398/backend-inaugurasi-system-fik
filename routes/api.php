@@ -12,6 +12,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('/event', [EventController::class, 'Index']);
+Route::get('/event/keuangan', [EventController::class, 'EventWithKeuangan']);
 Route::get('/event/{id}', [EventController::class, 'Show']);
 Route::post('/event', [EventController::class, 'Store']);
 Route::put('/event/{id}', [EventController::class, 'Update']);
