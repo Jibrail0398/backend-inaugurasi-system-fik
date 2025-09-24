@@ -34,13 +34,11 @@ class UangMasukController extends Controller
 
         if ($request->hasFile('bukti_pemasukan')) {
             $file = $request->file('bukti_pemasukan');
-            $path = $file->store('bukti_pemasukan', 'public'); 
-            $payload['bukti_pemasukan'] = $path; 
         }
 
         try {
 
-            $result = DB::transaction(function () use ($payload) {
+            $result = DB::transaction(function () use ($payload, $file) {
 
                 $uangMasuk = UangMasuk::create($payload);
 
@@ -51,6 +49,11 @@ class UangMasukController extends Controller
                 }
 
                 $keuangan->increment('saldo', $payload['jumlah_uang_masuk']);
+
+                if($file){
+                    $path = $file->store('bukti_pemasukan', 'public'); 
+                    $uangMasuk->update(['bukti_pemasukan' => $path]); 
+                }
 
                 return $uangMasuk;
             });
@@ -164,22 +167,14 @@ class UangMasukController extends Controller
                 ], 404);
             }
 
-            if ($request->hasFile('bukti_pemasukan')) {
+            $file = $request->file('bukti_pemasukan') ?? null;
 
-                if (!empty($uangMasuk->bukti_pemasukan)) {
-                    Storage::disk('public')->delete($uangMasuk->bukti_pemasukan);
-                }
-
-                $file = $request->file('bukti_pemasukan');
-                $path = $file->store('bukti_pemasukan', 'public');
-                $payload['bukti_pemasukan'] = $path;
-            }
-
-            $result = DB::transaction(function () use ($uangMasuk, $payload) {
+            $result = DB::transaction(function () use ($uangMasuk, $payload, $file) {
 
                 $originalKeuanganId = $uangMasuk->keuangan_id;
                 $originalJumlah = (float) $uangMasuk->jumlah_uang_masuk;
 
+                $oldFile = $uangMasuk->bukti_pemasukan;
                 $uangMasuk->update($payload);
 
                 $newKeuanganId = $payload['keuangan_id'];
@@ -229,6 +224,15 @@ class UangMasukController extends Controller
                             $keuangan->decrement('saldo', abs($delta));
                         }
                     }
+                }
+
+                if($file){
+                    if (!empty($oldFile)) {
+                        Storage::disk('public')->delete($oldFile);
+                    }   
+
+                    $path = $file->store('bukti_pemasukan', 'public');
+                    $uangMasuk->update(['bukti_pemasukan' => $path]);
                 }
 
                 return $uangMasuk;

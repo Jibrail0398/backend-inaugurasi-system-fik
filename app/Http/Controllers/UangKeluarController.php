@@ -33,13 +33,11 @@ class UangKeluarController extends Controller
 
         if ($request->hasFile('bukti_pengeluaran')) {
             $file = $request->file('bukti_pengeluaran');
-            $path = $file->store('bukti_pengeluaran', 'public');
-            $payload['bukti_pengeluaran'] = $path;
         }
 
         try {
 
-            $result = DB::transaction(function () use ($payload) {
+            $result = DB::transaction(function () use ($payload, $file) {
 
                 $uangKeluar = UangKeluar::create($payload);
 
@@ -55,7 +53,12 @@ class UangKeluarController extends Controller
                     throw new \Exception('Saldo tidak mencukupi');
                 }
 
-                $keuangan->decrement('saldo', $jumlah);    
+                $keuangan->decrement('saldo', $jumlah);  
+                
+                if ($file) {
+                    $path = $file->store('bukti_pengeluaran', 'public');
+                    $uangKeluar->update(['bukti_pengeluaran' => $path]);
+                }
 
                 return $uangKeluar;
             });
@@ -176,20 +179,13 @@ class UangKeluarController extends Controller
                 ], 404);
             }
 
-            if ($request->hasFile('bukti_pengeluaran')) {
+            $file = $request->file('bukti_pengeluaran') ?? null;
 
-                if (!empty($uangKeluar->bukti_pengeluaran)) {
-                    Storage::disk('public')->delete($uangKeluar->bukti_pengeluaran);
-                }
-                $file = $request->file('bukti_pengeluaran');
-                $path = $file->store('bukti_pengeluaran', 'public');
-                $payload['bukti_pengeluaran'] = $path;
-            }
-
-            $result = DB::transaction(function () use ($uangKeluar, $payload) {
+            $result = DB::transaction(function () use ($uangKeluar, $payload, $file) {
                 $originalKeuanganId = $uangKeluar->keuangan_id;
                 $originalJumlah = (float) $uangKeluar->jumlah_pengeluaran;
 
+                $oldFile = $uangKeluar->bukti_pengeluaran;
                 $uangKeluar->update($payload);
 
                 $newKeuanganId = $payload['keuangan_id'];
@@ -240,6 +236,15 @@ class UangKeluarController extends Controller
                                 ->increment('saldo', abs($delta));
                         }
                     }
+                }
+
+                if($file){
+                    if (!empty($oldFile)) {
+                        Storage::disk('public')->delete($oldFile);
+                    }   
+
+                    $path = $file->store('bukti_pengeluaran', 'public');
+                    $uangKeluar->update(['bukti_pengeluaran' => $path]);
                 }
 
                 return $uangKeluar;
