@@ -16,6 +16,7 @@ Route::get('/event/{id}', [EventController::class, 'Show']);
 Route::post('/event', [EventController::class, 'Store']);
 Route::put('/event/{id}', [EventController::class, 'Update']);
 Route::delete('/event/{id}', [EventController::class, 'Destroy']);
+Route::get('/event/check/{code}', [EventController::class, 'CheckCode']);
 
 Route::get('/keuangan', [KeuanganController::class, 'Index']);
 Route::get('/keuangan/report', [KeuanganController::class, 'Report']);

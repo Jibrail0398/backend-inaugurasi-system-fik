@@ -207,4 +207,37 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    public function CheckCode($code)
+    {   
+        try {
+            $event = Event::where('kode_event', $code)->first();
+
+            if(!$event){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kode tidak ditemukan'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kode valid',
+                'event' => [
+                    'id' => $event->id,
+                    'event' => $event->nama_event
+                ]
+            ], 200);
+
+        } catch (\Throwable $e) {
+           Log::error('Event CheckCode error: '.$e->getMessage(), [
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server saat melakukan validasi kode event'
+            ], 500);
+        }
+    }
 }
