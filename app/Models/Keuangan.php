@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\Keuangan;
+// use App\Models\Keuangan;
 use App\Models\UangMasuk;
 use App\Models\UangKeluar;
 use Illuminate\Http\Request;
