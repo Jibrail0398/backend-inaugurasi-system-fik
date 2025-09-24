@@ -110,7 +110,7 @@ class PendaftarPanitiaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $panitia = PendaftarPanitia::find($id);
+        $panitia = PendaftarPanitia::with('event')->find($id);
 
         if (!$panitia) {
             return response()->json([
@@ -120,22 +120,22 @@ class PendaftarPanitiaController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'event_id'          => 'sometimes|exists:event,id',
-            'kode_panitia'      => 'sometimes|string|unique:pendaptar_panitia,kode_panitia,' . $id,
-            'nama'              => 'sometimes|string|max:255',
-            'NIM'               => 'sometimes|string|max:16|unique:pendaptar_panitia,NIM,' . $id,
-            'email'             => 'sometimes|email|unique:pendaptar_panitia,email,' . $id,
-            'nomor_whatapp'     => 'sometimes|string|max:14',
-            'angkatan'          => 'sometimes|string|max:4',
-            'kelas'             => 'sometimes|string|max:50',
-            'tanggal_lahir'     => 'sometimes|date',
-            'ukuran_kaos'       => 'sometimes|string|max:10',
-            'nomor_darurat'     => 'sometimes|string|max:14',
-            'tipe_nomor_darurat'=> 'sometimes|string|max:50',
-            'riwayat_penyakit'  => 'nullable|string|max:255',
-            'divisi'            => 'sometimes|string|max:100',
-            'komitmen1'         => 'sometimes|in:ya,tidak',
-            'komitmen2'         => 'sometimes|in:ya,tidak',
+            'event_id'           => 'sometimes|exists:event,id',
+            'kode_panitia'       => 'sometimes|string|max:50',
+            'nama'               => 'sometimes|string|max:255',
+            'NIM'                => 'sometimes|string|max:16',
+            'email'              => 'sometimes|email',
+            'nomor_whatapp'      => 'sometimes|string|max:14',
+            'angkatan'           => 'sometimes|string|max:4',
+            'kelas'              => 'sometimes|string|max:50',
+            'tanggal_lahir'      => 'sometimes|date',
+            'ukuran_kaos'        => 'sometimes|string|max:10',
+            'nomor_darurat'      => 'sometimes|string|max:14',
+            'tipe_nomor_darurat' => 'sometimes|string|max:50',
+            'riwayat_penyakit'   => 'nullable|string|max:255',
+            'divisi'             => 'sometimes|string|max:100',
+            'komitmen1'          => 'sometimes|in:ya,tidak',
+            'komitmen2'          => 'sometimes|in:ya,tidak',
         ]);
 
         if ($validator->fails()) {
@@ -146,7 +146,37 @@ class PendaftarPanitiaController extends Controller
             ], 422);
         }
 
-        $panitia->update($validator->validated());
+        $data = $validator->validated();
+
+        // ✅ Cek unik NIM hanya jika berubah
+        if (isset($data['NIM']) && $data['NIM'] !== $panitia->NIM) {
+            $cekNIM = PendaftarPanitia::where('event_id', $panitia->event_id)
+                        ->where('NIM', $data['NIM'])
+                        ->where('id', '!=', $panitia->id)
+                        ->exists();
+            if ($cekNIM) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIM sudah digunakan panitia lain pada event ini'
+                ], 422);
+            }
+        }
+
+        // ✅ Cek unik email hanya jika berubah
+        if (isset($data['email']) && $data['email'] !== $panitia->email) {
+            $cekEmail = PendaftarPanitia::where('event_id', $panitia->event_id)
+                        ->where('email', $data['email'])
+                        ->where('id', '!=', $panitia->id)
+                        ->exists();
+            if ($cekEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email sudah digunakan panitia lain pada event ini'
+                ], 422);
+            }
+        }
+
+        $panitia->update($data);
 
         return response()->json([
             'success' => true,
@@ -154,6 +184,7 @@ class PendaftarPanitiaController extends Controller
             'data'    => $panitia
         ], 200);
     }
+
 
     /**
      * Hapus panitia
