@@ -24,16 +24,8 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
-            $table->softDeletes();
-
-            // Foreign key constraints
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->softDeletes();            
             $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
-
-            $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
-            $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
-            $table->timestamps();
         });
     }
 

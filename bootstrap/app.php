@@ -12,10 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-
-        // Replace the framework CSRF middleware in the 'web' group with our application implementation
-        $middleware->replaceInGroup('web', \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, App\Http\Middleware\VerifyCsrfToken::class);
-
+        $middleware->alias([
+        'auth.jwt' => \App\Http\Middleware\AuthJWT::class
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
