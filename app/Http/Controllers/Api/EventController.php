@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\Keuangan;
 use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
@@ -49,6 +50,14 @@ class EventController extends Controller
         $data['updated_by'] = $user ? $user->id : null;
 
         $event = Event::create($data);
+
+        // Buat keuangan untuk event baru
+        Keuangan::create([
+            'event_id' => $event->id,
+            'saldo' => 0,
+            'created_by' => $user ? $user->id : null,
+            'updated_by' => $user ? $user->id : null,
+        ]);
 
         return response()->json([
             'success' => true,
