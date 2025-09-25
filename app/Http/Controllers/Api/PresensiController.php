@@ -70,7 +70,8 @@ class PresensiController extends Controller
             if ($daftar->presensi_datang !== 'hadir') {
                 $daftar->update([
                     'presensi_datang'       => 'hadir',
-                    'waktu_presensi_datang' => now()
+                    'waktu_presensi_datang' => now(),
+                    'absen_by'              => $request->user ? $request->user->id : null
                 ]);
                 $message = 'Presensi datang berhasil dicatat';
             } else {
@@ -80,7 +81,8 @@ class PresensiController extends Controller
             if ($daftar->presensi_pulang !== 'pulang') {
                 $daftar->update([
                     'presensi_pulang'       => 'pulang',
-                    'waktu_presensi_pulang' => now()
+                    'waktu_presensi_pulang' => now(),
+                    'absen_by'              => $request->user ? $request->user->id : null
                 ]);
                 $message = 'Presensi pulang berhasil dicatat';
             } else {
