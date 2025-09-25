@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('event', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_event')->unique();
+            $table->string('kode_event')->unique()->nullable();
             $table->string('nama_event');
             $table->string('jenis');
             $table->string('tema');
@@ -21,7 +21,11 @@ return new class extends Migration
             $table->integer('harga_pendaftaran_peserta')->default(0);
             $table->enum('status_pendaftaran_panitia', ['buka', 'tutup'])->default('tutup');
             $table->enum('status_pendaftaran_peserta', ['buka', 'tutup'])->default('tutup');
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();            
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
         });
     }
 

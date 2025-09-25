@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('keuangan', function (Blueprint $table) {
             $table->id();
-            $table->integer('saldo')->default(0);;
+            $table->integer('saldo')->nullable();
             $table->foreignId('event_id')->constrained('event')->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('updated_by')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

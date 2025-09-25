@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('jumlah_pengeluaran')->nullable();
             $table->string('alasan_pengeluaran')->nullable();
-            $table->date('tanggal_pengeluaran')->nullable();
+            $table->string('tanggal_pengeluaran')->nullable();
             $table->string('bukti_pengeluaran')->nullable();
             $table->foreignId('keuangan_id')->constrained('keuangan')->onDelete('cascade');
             $table->timestamps();
