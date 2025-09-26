@@ -12,7 +12,7 @@ class EventController extends Controller
 {
     public function index()
     {
-        $events = Event::all();
+        $events = Event::with('keuangan')->get();
 
         return response()->json([
             'success' => true,
@@ -68,7 +68,7 @@ class EventController extends Controller
 
     public function show($id)
     {
-        $event = Event::find($id);
+        $event = Event::with('keuangan')->find($id);
 
         if (!$event) {
             return response()->json([
@@ -146,5 +146,34 @@ class EventController extends Controller
             'success' => true,
             'message' => 'Event berhasil dihapus'
         ], 200);
+    }
+
+    public function checkcode($code)
+    {   
+        try {
+            $event = Event::where('kode_event', $code)->first();
+
+            if(!$event){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kode tidak ditemukan'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kode valid',
+                'event' => [
+                    'id' => $event->id,
+                    'event' => $event->nama_event
+                ]
+            ], 200);
+
+        } catch (\Throwable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server'
+            ], 500);
+        }
     }
 }
