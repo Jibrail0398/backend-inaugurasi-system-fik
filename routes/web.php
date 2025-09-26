@@ -15,12 +15,8 @@ use App\Http\Controllers\PenerimaanPeserta;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('/phpinfo', function () {
-    phpinfo();
-});
-
 Route::get('/', function () {
     return view('welcome');
 });
+
 
