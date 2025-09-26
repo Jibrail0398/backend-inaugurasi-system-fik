@@ -23,4 +23,6 @@ env
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.envProduction
+
 
