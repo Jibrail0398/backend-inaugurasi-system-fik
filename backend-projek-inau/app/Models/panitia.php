@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class panitia extends Model
+
+// Model Panitia yang digunakan untuk menyimpan data panitia
 {
     use HasFactory;
 

@@ -8,6 +8,8 @@ use App\Models\peserta;
 
 class PendaftaranPesertaController extends Controller
 {
+
+    //Fungsi Store Data Pendaftaran Peserta
     public function daftar(Request $request)
     {
         try {
@@ -51,6 +53,7 @@ class PendaftaranPesertaController extends Controller
         }
     }
 
+    //Fungsi Get Data Pendaftaran Peserta
     public function get()
     {
         try {

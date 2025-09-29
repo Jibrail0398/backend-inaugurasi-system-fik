@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class peserta extends Model
 {
+    // Model Peserta yang digunakan untuk menyimpan data peserta
     use HasFactory;
 
     protected $table = 'peserta';

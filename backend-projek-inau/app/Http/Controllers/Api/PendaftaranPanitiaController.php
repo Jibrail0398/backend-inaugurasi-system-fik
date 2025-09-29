@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 
 class PendaftaranPanitiaController extends Controller
 {
+    //Fungsi Store Data Pendaftaran Panitia
     public function daftar(Request $request)
     {
         // --- IGNORE ---
@@ -54,6 +55,7 @@ class PendaftaranPanitiaController extends Controller
         }
     }
 
+    //Fungsi Get Data Pendaftaran Panitia
     public function get()
     {
         try {

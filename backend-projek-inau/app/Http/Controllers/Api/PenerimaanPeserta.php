@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 
 class PenerimaanPeserta extends Controller
 {
-    // 1. Menampilkan daftar peserta pending (belum diterima)
+    // Menampilkan daftar peserta pending (belum diterima)
     public function pending()
     {
         try {
@@ -27,7 +27,7 @@ class PenerimaanPeserta extends Controller
         }
     }
 
-    // 2. Menampilkan daftar peserta diterima
+    // Menampilkan daftar peserta diterima
     public function diterima()
     {
         try {
@@ -45,7 +45,7 @@ class PenerimaanPeserta extends Controller
         }
     }
 
-    // 3. Menampilkan detail peserta
+    // Menampilkan detail peserta
     public function show($id)
     {
         try {
@@ -63,7 +63,7 @@ class PenerimaanPeserta extends Controller
         }
     }
 
-    // 4. Menerima peserta
+    // Menerima peserta
     public function terima(Request $request, $id)
     {
         try {
@@ -90,7 +90,7 @@ class PenerimaanPeserta extends Controller
         }
     }
 
-    // 5. Menolak peserta   
+    // Menolak peserta   
     public function tolak($id)
     {
         $peserta = peserta::find($id);
@@ -121,7 +121,7 @@ class PenerimaanPeserta extends Controller
         ], 200);
     }
 
-    // 6. Menampilkan semua peserta
+    // Menampilkan semua peserta
     public function semuaPeserta()
     {
         try {

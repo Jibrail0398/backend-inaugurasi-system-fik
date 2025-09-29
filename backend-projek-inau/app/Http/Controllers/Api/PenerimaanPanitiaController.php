@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class PenerimaanPanitiaController extends Controller
-    // Menampilkan semua panitia (diterima dan ditolak)
 
 {
     // Menampilkan semua panitia yang ditolak
@@ -31,7 +30,7 @@ class PenerimaanPanitiaController extends Controller
         }
     }
 
-    //
+    // Menampilkan semua panitia yang belum diterima atau ditolak
     public function pending()
     {
         try {
@@ -49,6 +48,7 @@ class PenerimaanPanitiaController extends Controller
         }
     }
 
+    // Fungsi menampilkan panitia yang diterima
     public function diterima()
     {
         try {
@@ -66,6 +66,7 @@ class PenerimaanPanitiaController extends Controller
         }
     }
 
+    // Fungsi menampilkan status panitia berdasarkan ID
     public function show($id)
     {
         try {
@@ -83,6 +84,7 @@ class PenerimaanPanitiaController extends Controller
         }
     }
 
+    // Fungsi menerima panitia
     public function terima(Request $request, $id)
     {
         try {
@@ -109,6 +111,7 @@ class PenerimaanPanitiaController extends Controller
         }
     }
 
+    // Fungsi menolak panitia
     public function tolak(Request $request, $id)
     {
         try {
@@ -134,6 +137,8 @@ class PenerimaanPanitiaController extends Controller
             ], 500);
         }
     }
+
+    // Fungsi menampilkan semua panitia (diterima dan ditolak)
 
     public function semuaPanitia()
     {

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class penerimaan_panitia extends Model
 {
-    //
+    // model PenerimaanPanitia yang digunakan untuk menyimpan data penerimaan panitia
     use HasFactory;
 
     protected $table = 'penerimaan_panitia';

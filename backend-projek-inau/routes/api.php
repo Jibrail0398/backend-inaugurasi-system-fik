@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PendaftaranPanitiaController;
 use App\Http\Controllers\Api\PenerimaanPeserta;
 use App\Http\Controllers\Api\PenerimaanPanitiaController;
 
+// Semua route di sini akan memiliki prefix /api dan middleware api secara default
 // Route untuk pendaftaran peserta
 Route::post('/pendaftaran-peserta', [PendaftaranPesertaController::class, 'daftar']);
 Route::get('/pendaftaran-peserta', [PendaftaranPesertaController::class, 'get']);
