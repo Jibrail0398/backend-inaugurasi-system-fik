@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class panitia extends Model
-
-// Model Panitia yang digunakan untuk menyimpan data panitia
 {
     use HasFactory;
 
@@ -31,6 +29,7 @@ class panitia extends Model
         'komitmen2',
     ];
 
+    // Relasi ke penerimaan_panitia
     public function penerimaanPanitia()
     {
         return $this->hasMany(penerimaan_panitia::class, 'id_panitia');

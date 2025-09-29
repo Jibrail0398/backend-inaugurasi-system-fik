@@ -28,4 +28,10 @@ class panitia extends Model
         'komitmen1',
         'komitmen2',
     ];
+
+    // Relasi ke penerimaan_panitia
+    public function penerimaanPanitia()
+    {
+        return $this->hasMany(penerimaan_panitia::class, 'id_panitia');
+    }
 }

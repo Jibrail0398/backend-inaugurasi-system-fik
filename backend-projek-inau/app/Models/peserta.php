@@ -25,6 +25,9 @@ class peserta extends Model
         'tipe_nomor_darurat',
         'riwayat_penyakit',
         'bukti_pembayaran',
+        'divisi',
+        'komitmen1',
+        'komitmen2',
     ];
         // Relasi ke penerimaan_peserta
         public function penerimaan()

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class peserta extends Model
 {
+    // Model Peserta yang digunakan untuk menyimpan data peserta
     use HasFactory;
 
     protected $table = 'peserta';
@@ -23,8 +24,8 @@ class peserta extends Model
         'nomor_darurat',
         'tipe_nomor_darurat',
         'riwayat_penyakit',
-        'divisi',
         'bukti_pembayaran',
+        'divisi',
         'komitmen1',
         'komitmen2',
     ];
