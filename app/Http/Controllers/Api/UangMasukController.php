@@ -46,6 +46,9 @@ class UangMasukController extends Controller
 
         $masuk = UangMasuk::create($data);
 
+
+        
+
         return response()->json(['success' => true, 'message' => 'Pemasukan berhasil dibuat', 'data' => $masuk], 201);
     }
 

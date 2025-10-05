@@ -64,9 +64,9 @@ class PendaftarPesertaController extends Controller
             'ukuran_kaos'        => 'required|string|max:10',
             'nomor_darurat'      => 'required|string|max:14',
             'tipe_nomor_darurat' => 'required|string|max:50',
-            'riwayat_penyakit'   => 'nullable|string|max:255',
-            'divisi'             => 'required|string|max:100',
-            'bukti_pembayaran'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'riwayat_penyakit'   => 'required|string|max:255',
+            'divisi'             => 'nullable|string|max:100',
+            'bukti_pembayaran'   => 'required|image|mimes:jpeg,png,jpg|max:5048', #5mb 
         ]);
 
         if ($validator->fails()) {
