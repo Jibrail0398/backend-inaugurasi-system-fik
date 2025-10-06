@@ -15,7 +15,7 @@ class PenerimaanPeserta extends Model
     use HasFactory;
 
     protected $table = 'penerimaan_peserta';
-    protected $fillable = ['status_pembayaran','tanggal_penerimaan','pendaptar_peserta_id', 'konfirmasi_by', 'updated_by', 'created_at', 'updated_at'];
+    protected $fillable = ['status_pembayaran','tanggal_penerimaan','pendaptar_peserta_id', 'konfirmasi_by', 'update_by', 'created_at', 'updated_at'];
 
     protected static function booted()
     {
