@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('nomor_darurat')->length(14);
             $table->string('tipe_nomor_darurat');
             $table->string('riwayat_penyakit');
-            $table->string('divisi');
             $table->string('bukti_pembayaran')->nullable();
             $table->timestamps();
             $table->softDeletes();

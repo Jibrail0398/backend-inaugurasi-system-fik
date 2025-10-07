@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('tanggal_pemasukan')->nullable();
             $table->string('bukti_pemasukan')->nullable();
             $table->foreignId('keuangan_id')->constrained('keuangan')->onDelete('cascade');
+            $table->foreignId('peserta_id')->nullable()->constrained('pendaptar_peserta')->onDelete('cascade');
             $table->timestamps();
         });
     }

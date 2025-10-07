@@ -1,77 +1,210 @@
 <?php
 
-namespace App\Http\Controllers;
-use App\Models\panitia;
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use App\Models\PendaftarPanitia;
+use App\Models\PenerimaanPanitia;
+use App\Models\Event;
 
-class PendaftaranPanitiaController extends Controller
+class PendaftarPanitiaController extends Controller
 {
-    public function daftar(Request $request)
+    /**
+     * Daftar semua panitia
+     */
+    public function index()
     {
-        // --- IGNORE ---
-        try {
-            $validatedData = $request->validate([
-                'nama' => 'required|string|max:255',
-                'NIM' => 'required|string|max:16|unique:panitia,NIM',
-                'angkatan' => 'required|string|max:4',
-                'kelas' => 'required|string|max:255',
-                'tanggal_lahir' => 'required|date',
-                'nomor_whatsapp' => 'required|string|max:14',
-                'email' => 'required|email|unique:panitia,email',
-                'ukuran_kaos' => 'required|string|max:10',
-                'nomor_darurat' => 'required|string|max:14',
-                'tipe_nomor_darurat' => 'required|string|max:50',
-                'riwayat_penyakit' => 'nullable|string|max:500',
-                'divisi' => 'required|string|max:100',
-                'komitmen1' => 'required|in:ya,tidak',
-                'komitmen2' => 'required|in:ya,tidak',
-            ], [
-                'NIM.required' => 'NIM wajib diisi.',
-                'NIM.unique' => 'NIM sudah terdaftar.',
-                'email.required' => 'Email wajib diisi.',
-                'email.unique' => 'Email sudah terdaftar.',
-                'email.email' => 'Format email tidak valid.'
-            ]);
+        $panitia = PendaftarPanitia::with('event')->get();
 
-            $panitia = panitia::create($validatedData);
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar semua panitia',
+            'data'    => $panitia
+        ], 200);
+    }
 
+    /**
+     * Tambah panitia baru
+     */
+    public function store(Request $request , $kode_event)
+    {
+
+        $event = Event::where('kode_event', $kode_event)->first();
+        if (!$event) {
             return response()->json([
-                'message' => 'Pendaftaran berhasil!',
-                'data' => $panitia
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+                'success' => false,
+                'message' => 'Event dengan kode ' . $kode_event . ' tidak ditemukan'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'nama'               => 'required|string|max:255',
+            'NIM'                => 'required|string|max:16',
+            'email'              => 'required|email',
+            'nomor_whatapp'      => 'required|string|max:14',
+            'angkatan'           => 'required|string|max:4',
+            'kelas'              => 'required|string|max:50',
+            'tanggal_lahir'      => 'required|date',
+            'ukuran_kaos'        => 'required|string|max:10',
+            'nomor_darurat'      => 'required|string|max:14',
+            'tipe_nomor_darurat' => 'required|string|max:50',
+            'riwayat_penyakit'   => 'nullable|string|max:255',
+            'divisi'             => 'required|string|max:100',
+            'komitmen1'          => 'required|in:ya,tidak',
+            'komitmen2'          => 'required|in:ya,tidak',
+        ]);
+
+        if ($validator->fails()) {
             return response()->json([
+                'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors'  => $validator->errors()
             ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($validator, &$panitia , $request, $event) {
+                $data = $validator->validated();
+
+                // Cek unik NIM/email per event
+                if (PendaftarPanitia::where('event_id', $event->id)->where('NIM', $data['NIM'])->exists()) {
+                    throw new \Exception('NIM sudah terdaftar di event ini');
+                }
+                if (PendaftarPanitia::where('event_id', $event->id)->where('email', $data['email'])->exists()) {
+                    throw new \Exception('Email sudah terdaftar di event ini');
+                }
+
+                // Buat panitia tanpa auto kode_panitia
+                $panitia = PendaftarPanitia::create(array_merge($data, [
+                    'event_id' => $event->id,
+                ]));
+                // Buat penerimaan otomatis
+                PenerimaanPanitia::create([
+                    'pendaftaran_panitia_id' => $panitia->id,
+                    'tanggal_penerimaan'     => null,
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Panitia berhasil dibuat & penerimaan otomatis dibuat',
+                'data'    => $panitia
+            ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Terjadi kesalahan pada server',
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'Terjadi error saat menyimpan data panitia',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
 
-    public function get()
+
+
+    /**
+     * Update data panitia
+     */
+    public function update(Request $request, $id)
     {
-        try {
-            $panitia = panitia::all();
-            if ($panitia->count() > 0) {
-                return response()->json([
-                    'message' => 'Daftar panitia berhasil diambil',
-                    'data' => $panitia
-                ], 200);
-            } else {
-                return response()->json([
-                    'message' => 'Tidak ada data panitia',
-                    'data' => []
-                ], 200);
-            }
-        } catch (\Exception $e) {
+        $panitia = PendaftarPanitia::with('event')->find($id);
+
+        if (!$panitia) {
             return response()->json([
-                'message' => 'Terjadi kesalahan pada server',
-                'error' => $e->getMessage()
-            ], 500);
+                'success' => false,
+                'message' => 'Panitia tidak ditemukan'
+            ], 404);
         }
+
+        $validator = Validator::make($request->all(), [
+            'event_id'           => 'sometimes|exists:event,id',
+            'kode_panitia'       => 'sometimes|string|max:50',
+            'nama'               => 'sometimes|string|max:255',
+            'NIM'                => 'sometimes|string|max:16',
+            'email'              => 'sometimes|email',
+            'nomor_whatapp'      => 'sometimes|string|max:14',
+            'angkatan'           => 'sometimes|string|max:4',
+            'kelas'              => 'sometimes|string|max:50',
+            'tanggal_lahir'      => 'sometimes|date',
+            'ukuran_kaos'        => 'sometimes|string|max:10',
+            'nomor_darurat'      => 'sometimes|string|max:14',
+            'tipe_nomor_darurat' => 'sometimes|string|max:50',
+            'riwayat_penyakit'   => 'nullable|string|max:255',
+            'divisi'             => 'sometimes|string|max:100',
+            'komitmen1'          => 'sometimes|in:ya,tidak',
+            'komitmen2'          => 'sometimes|in:ya,tidak',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        // ✅ Cek unik NIM hanya jika berubah
+        if (isset($data['NIM']) && $data['NIM'] !== $panitia->NIM) {
+            $cekNIM = PendaftarPanitia::where('event_id', $panitia->event_id)
+                        ->where('NIM', $data['NIM'])
+                        ->where('id', '!=', $panitia->id)
+                        ->exists();
+            if ($cekNIM) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIM sudah digunakan panitia lain pada event ini'
+                ], 422);
+            }
+        }
+
+        // ✅ Cek unik email hanya jika berubah
+        if (isset($data['email']) && $data['email'] !== $panitia->email) {
+            $cekEmail = PendaftarPanitia::where('event_id', $panitia->event_id)
+                        ->where('email', $data['email'])
+                        ->where('id', '!=', $panitia->id)
+                        ->exists();
+            if ($cekEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email sudah digunakan panitia lain pada event ini'
+                ], 422);
+            }
+        }
+
+        $panitia->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Panitia berhasil diperbarui',
+            'data'    => $panitia
+        ], 200);
+    }
+
+
+    /**
+     * Hapus panitia
+     */
+    public function destroy($id)
+    {
+        $panitia = PendaftarPanitia::find($id);
+
+        if (!$panitia) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Panitia tidak ditemukan'
+            ], 404);
+        }
+
+        $panitia->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Panitia berhasil dihapus'
+        ], 200);
     }
 }

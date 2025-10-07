@@ -16,61 +16,43 @@ class UangMasukController extends Controller
     public function Store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'jumlah_uang_masuk' => 'required|numeric|min:1',
-            'asal_pemasukan'    => 'required|string|max:255',
+            'jumlah_uang_masuk' => 'required|integer',
+            'asal_pemasukan' => 'required|string|max:255',
             'tanggal_pemasukan' => 'required|date',
-            'bukti_pemasukan'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'keuangan_id'       => 'required|exists:keuangan,id',            
+            'bukti_pemasukan' => 'required|image|mimes:jpeg,png,jpg|max:5000', // wajib foto
+            'keuangan_id' => 'required|exists:keuangan,id',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->messages()
-            ], 422);
-        }
+        if ($validator->fails()) return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
 
         $payload = $validator->validated();
 
         if ($request->hasFile('bukti_pemasukan')) {
             $file = $request->file('bukti_pemasukan');
-            $path = $file->store('bukti_pemasukan', 'public'); 
-            $payload['bukti_pemasukan'] = $path; 
         }
 
         try {
+            $result = DB::transaction(function () use ($payload, $file) {
+                $masuk = UangMasuk::create($payload);
 
-            $result = DB::transaction(function () use ($payload) {
-
-                $uangMasuk = UangMasuk::create($payload);
-
+                //tambah saldo pada keuangan saat record uang masuk dibuat
                 $keuangan = Keuangan::where('id', $payload['keuangan_id'])->lockForUpdate()->first();
-
-                if (!$keuangan) {
-                    throw new \Exception('Keuangan tidak ditemukan');
-                }
-
                 $keuangan->increment('saldo', $payload['jumlah_uang_masuk']);
 
-                return $uangMasuk;
+                if($file){
+                    $path = $file->store('bukti_pemasukan', 'public');
+                    $masuk->update(['bukti_pemasukan' => $path]);
+                }
+
+                return $masuk;
             });
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Record uang masuk berhasil disimpan',
-                'data' => $result
-            ], 201);
+            return response()->json(['success' => true, 'message' => 'Pemasukan berhasil dibuat', 'data' => $result], 201);
 
-        } catch (\Throwable $e) {
-
-            Log::error('UangMasuk Store error: '.$e->getMessage(), [
-                'payload' => $payload,
-                'exception' => $e
-            ]);
-
+        } catch (\Throwable) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan record uang masuk.'
+                'message' => 'Terjadi kesalahan server'
             ], 500);
         }
     }
