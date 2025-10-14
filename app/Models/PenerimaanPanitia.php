@@ -28,7 +28,7 @@ class PenerimaanPanitia extends Model
 
     protected static function booted()
     {
-        static::created(function ($penerimaan) {
+        static::updating(function ($penerimaan) {
 
             $pendaftar = $penerimaan->pendaftarPanitia;
             $kodeEvent = $pendaftar->event->kode_event ?? 'umum';
