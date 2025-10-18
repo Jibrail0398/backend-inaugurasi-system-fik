@@ -84,6 +84,38 @@ class EventController extends Controller
         ], 200);
     }
 
+    public function showByKode($kode_event)
+    {
+        try {
+            $event = Event::where('kode_event', $kode_event)->first();
+
+            if (!$event) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Event tidak ditemukan'
+                ], 404);
+            }
+
+            // Ambil keuangan terkait juga
+            $keuangan = Keuangan::where('event_id', $event->id)->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail event',
+                'data'    => [
+                    'event' => $event,
+                    'keuangan' => $keuangan
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error showByKode: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server'
+            ], 500);
+        }
+    }
+
     public function update(Request $request, $id)
     {
         $event = Event::find($id);

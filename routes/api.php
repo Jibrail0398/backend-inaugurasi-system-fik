@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/index', [EventController::class,'index']);
             Route::post('/add', [EventController::class,'store']);
             Route::get('/show/{id}', [EventController::class,'show']);
+            Route::get('/showbycode/{kode_event}', [EventController::class,'showByKode']);
             Route::put('/update/{id}', [EventController::class,'update']);
             Route::delete('/delete/{id}', [EventController::class,'destroy']);
         });
