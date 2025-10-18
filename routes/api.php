@@ -21,6 +21,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
     Route::post('/pendaftaran-panitia/{kode_event}', [PendaftarPanitiaController::class,'store']);
+    Route::get('/event/showbycode/{kode_event}', [EventController::class,'showByKode']);
 
     Route::middleware('auth.jwt:admin,mentor')->group(function () {
 
@@ -33,7 +34,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/index', [EventController::class,'index']);
             Route::post('/add', [EventController::class,'store']);
             Route::get('/show/{id}', [EventController::class,'show']);
-            Route::get('/showbycode/{kode_event}', [EventController::class,'showByKode']);
             Route::put('/update/{id}', [EventController::class,'update']);
             Route::delete('/delete/{id}', [EventController::class,'destroy']);
         });
