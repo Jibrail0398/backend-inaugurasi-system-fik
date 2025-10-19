@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\PenerimaanPanitiaController;
 use App\Http\Controllers\Api\KeuanganController;
 use App\Http\Controllers\Api\UangMasukController;
 use App\Http\Controllers\Api\UangKeluarController;
+use App\Http\Controllers\Api\SertifikatController;
+use App\Http\Controllers\Api\DokumentasiController;
 
 
 Route::prefix('v1')->group(function () {
@@ -90,6 +92,27 @@ Route::prefix('v1')->group(function () {
             Route::post('/add', [UangKeluarController::class, 'store']);      
             Route::put('/update/{id}', [UangKeluarController::class, 'update']); 
             Route::delete('/delete/{id}', [UangKeluarController::class, 'destroy']); 
+        });
+
+
+        // Sertifikat Routes
+        Route::prefix('sertifikat')->group(function () {
+            Route::get('/index', [SertifikatController::class, 'index']);
+            Route::post('/add', [SertifikatController::class, 'store']);
+            Route::get('/show/{id}', [SertifikatController::class, 'show']);
+            Route::put('/update/{id}', [SertifikatController::class, 'update']);
+            Route::delete('/delete/{id}', [SertifikatController::class, 'destroy']);
+        });
+
+
+        // Dokumentasi Routes
+        Route::prefix('dokumentasi')->group(function () {
+            Route::get('/index', [DokumentasiController::class, 'index']);
+            Route::post('/add', [DokumentasiController::class, 'store']);
+            Route::get('/show/{id}', [DokumentasiController::class, 'show']);
+            Route::put('/update/{id}', [DokumentasiController::class, 'update']);
+            Route::delete('/delete/{id}', [DokumentasiController::class, 'destroy']);
+            Route::get('/event/{eventId}', [DokumentasiController::class, 'getByEvent']);
         });
 
     });
