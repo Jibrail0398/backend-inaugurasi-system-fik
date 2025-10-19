@@ -20,29 +20,20 @@ class UserSeeder extends Seeder
     {
         // Admin
         User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'nim' => '1234567890',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
+            'name' => env("SEED_ADMIN_NAME"),
+            'email' => env("SEED_ADMIN_EMAIL"),
+            'nim' => env("SEED_ADMIN_NIM"),
+            'password' => Hash::make(env("SEED_ADMIN_PASSWORD")),
+            'role' => env("SEED_ADMIN_ROLE"),
         ]);
 
         // Mentor
         User::create([
-            'name' => 'Mentor User',
-            'email' => 'mentor@example.com',
-            'nim' => '1234567891',
-            'password' => Hash::make('password123'),
-            'role' => 'mentor',
-        ]);
-
-        // Panitia
-        User::create([
-            'name' => 'Panitia User',
-            'email' => 'panitia@example.com',
-            'nim' => '1234567892',
-            'password' => Hash::make('password123'),
-            'role' => 'panitia',
+            'name' => env("SEED_MENTOR_NAME"),
+            'email' => env("SEED_MENTOR_EMAIL"),
+            'nim' => env("SEED_MENTOR_NIM"),
+            'password' => Hash::make(env("SEED_MENTOR_PASSWORD")),
+            'role' => env("SEED_MENTOR_ROLE"),
         ]);
 
 

@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('uang_keluar', function (Blueprint $table) {
             $table->id();
-            $table->string('event_name')->nullable();
             $table->integer('jumlah_pengeluaran')->nullable();
             $table->string('alasan_pengeluaran')->nullable();
             $table->string('tanggal_pengeluaran')->nullable();
             $table->string('bukti_pengeluaran')->nullable();
             $table->foreignId('keuangan_id')->constrained('keuangan')->onDelete('cascade');
-            $table->foreignId('create_by')->nullable()->constrained('users')->onDelete('cascade');
-            $table->foreignId('update_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

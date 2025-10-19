@@ -22,7 +22,6 @@ class AuthController extends Controller
 
     // API untuk login (Login dengan NIM dan password)
 
-
     public function login(Request $request)
     {
         // 1. Validasi input
