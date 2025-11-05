@@ -18,7 +18,7 @@ class PenerimaanPesertaController extends Controller
 {
     public function index()
     {
-        $penerimaan = PenerimaanPeserta::with(['pendaftarPeserta.event', 'daftarHadir'])->get();
+        $penerimaan = PenerimaanPeserta::with(['pendaftarPeserta', 'daftarHadir'])->get();
 
         return response()->json([
             'success' => true,
@@ -28,7 +28,7 @@ class PenerimaanPesertaController extends Controller
 
     public function show($id)
     {
-        $penerimaan = PenerimaanPeserta::with(['pendaftarPeserta.event', 'daftarHadir'])->find($id);
+        $penerimaan = PenerimaanPeserta::with(['pendaftarPeserta', 'daftarHadir'])->find($id);
 
         if (!$penerimaan) {
             return response()->json([
