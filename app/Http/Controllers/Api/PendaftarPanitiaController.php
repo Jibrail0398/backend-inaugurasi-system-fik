@@ -17,7 +17,7 @@ class PendaftarPanitiaController extends Controller
      */
     public function index()
     {
-        $panitia = PendaftarPanitia::with('event')->get();
+        $panitia = PendaftarPanitia::with('event', 'penerimaan')->get();
 
         return response()->json([
             'success' => true,

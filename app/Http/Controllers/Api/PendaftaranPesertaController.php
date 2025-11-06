@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\peserta;
 class PendaftaranPesertaController extends Controller
 {
+    public function index()
+    {
+        $pesertas = peserta::all();
+        return response()->json($pesertas);
+    }
     public function daftar(Request $request)
     {
         try {
@@ -65,7 +70,7 @@ class PendaftaranPesertaController extends Controller
                 return response()->json([
                     'message' => 'Belum ada peserta yang terdaftar',
                     'data' => []
-                ], 200);
+                ], 404);
             }
         } catch (\Exception $e) {
             return response()->json([

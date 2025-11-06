@@ -39,6 +39,6 @@ class PendaftarPanitia extends Model
 
     public function penerimaan()
     {
-        return $this->hasOne(PenerimaanPanitia::class, 'pendaftar_panitia_id');
+        return $this->hasOne(PenerimaanPanitia::class, 'pendaftaran_panitia_id');
     }
 }
