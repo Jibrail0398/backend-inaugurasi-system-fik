@@ -16,7 +16,7 @@ class PendaftarPesertaController extends Controller
     public function index()
     {
         try {
-            $peserta = PendaftarPeserta::with('event')->get();
+            $peserta = PendaftarPeserta::with('event','penerimaanPeserta')->get();
 
             if ($peserta->isEmpty()) {
                 return response()->json([
