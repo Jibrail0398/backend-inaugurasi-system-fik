@@ -24,6 +24,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/pendaftaran-peserta/{kode_event}', [PendaftarPesertaController::class,'store']);
     Route::post('/pendaftaran-panitia/{kode_event}', [PendaftarPanitiaController::class,'store']);
     Route::get('/event/showbycode/{kode_event}', [EventController::class,'showByKode']);
+    Route::get('/events',[EventController::class,"index"]);
 
     Route::middleware('auth.jwt:admin,mentor')->group(function () {
 
